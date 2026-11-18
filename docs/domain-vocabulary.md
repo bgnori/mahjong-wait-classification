@@ -3,6 +3,11 @@
 この文書は、麻雀の一般語彙と、このプロジェクト内で使う説明語彙を管理する。
 Leanの構文やタクティクは [lean-vocabulary.md](lean-vocabulary.md) に置き、ここでは麻雀待ち分類の概念を扱う。
 
+牌種、136物理牌ID、Int37／34種表現、カウント集約、牌種容量の共通定義は、
+[Mahjong Domain Coreの用語集](https://github.com/bgnori/mahjong-domain-core/blob/a21dd8484d22901683eeedd2ed77625245031029/docs/GLOSSARY.md)
+を正本とする。この文書は待ち分類固有の分解・順序・可約性の語彙と、
+共通用語との意味差を記録する。
+
 ## 和了構成部品
 
 和了構成部品は、通常形の和了を雀頭1つと面子4つに分けたときの、分割済みの各部品を指す

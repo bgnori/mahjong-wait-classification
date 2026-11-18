@@ -1,7 +1,7 @@
 module
 
 public import Mahjong.Basic
-public import MahjongDomain.Tile
+public import MahjongDomain.Representation
 import Mathlib.Tactic.FinCases
 
 /-!
@@ -108,5 +108,29 @@ theorem tileIndex_val (tile : Tile) :
         simp [toDomainTile, toDomainHonor, MahjongDomain.Tile.index, Tile.orderKey,
           Tile.numberedCount, Suit.count, Suit.all, Honor.orderKey, Honor.all,
           numberedRankCount]
+
+/-- Convert a local physical tile to its stable 0-based Tenhou ID. -/
+def toDomainPhysicalTileId (physical : PhysicalTile) : MahjongDomain.PhysicalTileId :=
+  let index := MahjongDomain.Tile.index (toDomainTile physical.1)
+  ⟨index.val * 4 + physical.2.val, by
+    have hindex := index.isLt
+    have hcopy : physical.2.val < 4 := by
+      simpa only [copiesPerTile] using physical.2.isLt
+    omega⟩
+
+theorem toDomainPhysicalTileId_copy (physical : PhysicalTile) :
+    (toDomainPhysicalTileId physical).val % 4 = physical.2.val := by
+  simp [toDomainPhysicalTileId]
+
+theorem toDomainPhysicalTileId_preserves_tile (physical : PhysicalTile) :
+    MahjongDomain.PhysicalTileId.tile (toDomainPhysicalTileId physical) =
+      toDomainTile physical.1 := by
+  have hcopy : physical.2.val < 4 := by
+    simpa only [copiesPerTile] using physical.2.isLt
+  apply MahjongDomain.Tile.index_injective
+  apply Fin.ext
+  rw [MahjongDomain.PhysicalTileId.tile_index]
+  simp [toDomainPhysicalTileId]
+  omega
 
 end Mahjong.DomainAdapter
