@@ -1,5 +1,7 @@
-import Mahjong.Basic
-import MahjongDomain.Tile
+module
+
+public import Mahjong.Basic
+public import MahjongDomain.Tile
 import Mathlib.Tactic.FinCases
 
 /-!
@@ -8,6 +10,8 @@ import Mathlib.Tactic.FinCases
 The classification API keeps its named rank and honor types. These conversions
 make the correspondence with the shared normalized tile model explicit.
 -/
+
+@[expose] public section
 
 namespace Mahjong.DomainAdapter
 

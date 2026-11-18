@@ -1,10 +1,17 @@
-import Mathlib.Data.Fin.Basic
-import Mathlib.Data.Finset.Basic
-import Mathlib.Data.Fintype.Basic
-import Mathlib.Data.Fintype.Prod
-import Mathlib.Data.Fintype.Sigma
-import Mathlib.Data.Fintype.Sum
+module
+
+public import Init
+public meta import Init
+
+public import Mathlib.Data.Fin.Basic
+public import Mathlib.Data.Finset.Basic
+public import Mathlib.Data.Fintype.Basic
+public import Mathlib.Data.Fintype.Prod
+public import Mathlib.Data.Fintype.Sigma
+public import Mathlib.Data.Fintype.Sum
 import Mathlib.Tactic.DeriveFintype
+
+@[expose] public section
 
 /-!
 # 麻雀牌の基礎定義
@@ -207,42 +214,40 @@ deriving BEq, DecidableEq, Repr
 
 namespace Tile
 
-private def mpszSuffix : Suit → String
-| .Manzu => "m"
-| .Pinzu => "p"
-| .Souzu => "s"
-
-private def honorMpszRank (honor : Honor) : Nat :=
-  Honor.orderKey honor + 1
-
-private def numberedUnicodeOffset : Suit → Nat
-| .Manzu => 0x1F007
-| .Pinzu => 0x1F019
-| .Souzu => 0x1F010
-
-private def Honor.unicode : Honor → String
-| .East => "🀀"
-| .South => "🀁"
-| .West => "🀂"
-| .North => "🀃"
-| .White => "🀆"
-| .Green => "🀅"
-| .Red => "🀄"
-
 /-- 1つの牌種を指定された形式の文字列に変換する。 -/
 def format (output : TileFormat) : Tile → String
 | .numbered suit rank =>
   match output with
-  | .unicode => String.singleton (Char.ofNat (numberedUnicodeOffset suit + rank.val))
-  | .mpsz => s!"{rank.val + 1}{mpszSuffix suit}"
+  | .unicode =>
+      let offset :=
+        match suit with
+        | .Manzu => 0x1F007
+        | .Pinzu => 0x1F019
+        | .Souzu => 0x1F010
+      String.singleton (Char.ofNat (offset + rank.val))
+  | .mpsz =>
+      let suffix :=
+        match suit with
+        | .Manzu => "m"
+        | .Pinzu => "p"
+        | .Souzu => "s"
+      s!"{rank.val + 1}{suffix}"
 | .honor h =>
   match output with
-  | .unicode => Honor.unicode h
-  | .mpsz => s!"{honorMpszRank h}z"
+  | .unicode =>
+      match h with
+      | .East => "🀀"
+      | .South => "🀁"
+      | .West => "🀂"
+      | .North => "🀃"
+      | .White => "🀆"
+      | .Green => "🀅"
+      | .Red => "🀄"
+  | .mpsz => s!"{Honor.orderKey h + 1}z"
 
 example : format .unicode (.numbered .Manzu 0) = "🀇" := rfl
-example : format .mpsz (.numbered .Pinzu 8) = "9p" := rfl
+example : format .mpsz (.numbered .Pinzu 8) = "9p" := by native_decide
 example : format .unicode (.honor .Red) = "🀄" := rfl
-example : format .mpsz (.honor .White) = "5z" := rfl
+example : format .mpsz (.honor .White) = "5z" := by native_decide
 
 end Tile
