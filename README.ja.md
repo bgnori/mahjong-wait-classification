@@ -159,6 +159,13 @@ VS Codeでコンテナを開くとき、またはCodespaceの作成オプショ�
 選択する。通常のローカル作業では`development`を使い、重いレポートを生成するときだけ対応する
 構成を使う。
 
+どの構成も、イメージのビルド時に [`lean-toolchain`](lean-toolchain) が指定する
+Lean をインストールする。指定バージョンを変更した場合はイメージを再ビルドする。
+同じイメージからコンテナを作り直しても Lean は再ダウンロードされない。
+Lake の依存関係と mathlib キャッシュは引き続き devcontainer 作成時に準備する。
+Docker 単体でビルドする場合は、リポジトリのルートで
+`docker build -f .devcontainer/Dockerfile -t mahjong-wait-classification-dev .` を実行する。
+
 `hostRequirements`はCodespacesなどが適切なホストを選ぶための最低要件であり、Dockerの資源上限
 ではない。どの構成もDockerの`--cpus`・`--memory`制限を設定していない。Codespace作成後は次を
 確認する。

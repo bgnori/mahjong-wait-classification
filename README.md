@@ -177,6 +177,13 @@ Select the configuration when opening the repository in a VS Code dev container 
 Codespace creation options. Use `development` for normal local work and select a report-specific
 configuration only when generating that report.
 
+All profiles install the version from [`lean-toolchain`](lean-toolchain) when
+building the image. Rebuild the image when the pin changes; new containers from
+the same image do not download Lean again. Lake dependencies and the mathlib
+cache are still set up when the dev container is created. For a plain Docker
+build, run `docker build -f .devcontainer/Dockerfile -t mahjong-wait-classification-dev .`
+from the repository root.
+
 `hostRequirements` helps services such as Codespaces choose a suitable host; it does not impose
 Docker resource limits. None of the configurations sets Docker CPU or memory limits. After creating
 or rebuilding the container, verify the available resources with:

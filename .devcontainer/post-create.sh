@@ -6,16 +6,11 @@ set -e
 
 echo "=== Lean 4 DevContainer Setup ==="
 
-# 1. Install the toolchain specified in lean-toolchain
-TOOLCHAIN=$(cat lean-toolchain | tr -d '[:space:]')
-echo "Installing toolchain: $TOOLCHAIN"
-elan default "$TOOLCHAIN"
-
-# 2. Update lake dependencies
+# Update Lake dependencies using the toolchain installed in the image.
 echo "Updating lake dependencies..."
 lake update
 
-# 3. If Mathlib is a dependency, fetch precompiled cache
+# If Mathlib is a dependency, fetch precompiled cache.
 if grep -q "mathlib" lakefile.lean 2>/dev/null || grep -q "mathlib" lakefile.toml 2>/dev/null; then
     echo "Mathlib detected as dependency. Fetching precompiled cache..."
     echo "This may take a few minutes on first run."

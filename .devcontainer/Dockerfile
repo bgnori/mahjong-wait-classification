@@ -1,7 +1,6 @@
 # ============================================
 # Lean 4 DevContainer Dockerfile
 # Base: debian:bookworm-slim (~70MB)
-# Final Size: ~300MB (without Mathlib cache)
 #
 # Host resources are selected by Codespaces from the chosen devcontainer profile.
 # Do not impose Docker CPU or memory limits inside this image.
@@ -27,13 +26,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV ELAN_HOME=/usr/local/elan \
     PATH=/usr/local/elan/bin:$PATH
 
-# Create a shared elan directory accessible to all users
-RUN mkdir -p $ELAN_HOME && chmod 777 $ELAN_HOME
+RUN curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh \
+    && sh /tmp/elan-init.sh -y --no-modify-path --default-toolchain none \
+    && rm /tmp/elan-init.sh
 
-# Install elan globally (no default toolchain - resolved per-project via lean-toolchain)
-RUN curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf \
-    | sh -s -- -y --no-modify-path --default-toolchain none \
-    && chmod -R a+w $ELAN_HOME \
-    && elan --version
+COPY lean-toolchain /tmp/lean-toolchain
+RUN toolchain="$(cat /tmp/lean-toolchain)" \
+    && elan toolchain install "$toolchain" \
+    && elan default "$toolchain" \
+    && rm /tmp/lean-toolchain
 
 WORKDIR /workspace
