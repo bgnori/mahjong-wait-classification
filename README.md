@@ -133,6 +133,18 @@ hands. This package is subordinate to the Lean specification: specification
 changes must be made in Lean first and then ported to Go. See
 [`mahjong/README.md`](mahjong/README.md) for usage and testing.
 
+The package also provides `WaitDecompositionCodesInt37`,
+`PathologyProfileForHandInt37`, `ClassifyIrreducibleWaitInt37`, and
+`ClassifyIrreducibleWaitIDInt37` for the versioned `aka37-int37/v1` input
+format. Each `int` is one closed tile: `0..9`, `10..19`, and `20..29` encode
+manzu, pinzu, and souzu respectively: `0`, `10`, and `20` are red fives;
+`1..9`, `11..19`, and `21..29` encode ranks `1..9` in each suit. `30..36`
+encode honors `1z..7z`. Repeated values represent copies, with at most four of
+a kind, at most one red five and three ordinary fives per suit, and at most
+four fives combined per suit. Red and ordinary fives normalize to the same
+classifier kind. For example, `[1, 2, 2, 3]` represents `1223m`; melds and
+physical copy identity are not represented.
+
 ### GCP Batch pilot
 
 The four-, seven-, ten-, and thirteen-tile reports can all be run through the
@@ -165,24 +177,34 @@ not byte-identical. Compare against `reports/seven-tile-report.json` with
 
 ### Dev containers by workload
 
-Choose a dev container configuration based on the output being generated:
+Choose a dev container configuration based on the workload:
 
-| Configuration | Workload | Minimum host requirements |
-| --- | --- | --- |
-| `development` | Normal editing, proofs, tests, and four-/seven-tile reports | None declared |
-| `ten-tile` | Ten-tile report | 4 CPUs, 4 GB RAM, 32 GB storage |
-| `thirteen-tile` | Thirteen-tile report | 16 CPUs, 64 GB RAM, 64 GB storage |
+| Configuration | Workload | Go | Minimum host requirements |
+| --- | --- | --- | --- |
+| `development` | Normal editing, proofs, tests, Go port validation, and four-/seven-tile reports | Included | None declared |
+| `ten-tile` | Ten-tile report | Not included | 4 CPUs, 4 GB RAM, 32 GB storage |
+| `thirteen-tile` | Thirteen-tile report | Not included | 16 CPUs, 64 GB RAM, 64 GB storage |
 
 Select the configuration when opening the repository in a VS Code dev container or in the
 Codespace creation options. Use `development` for normal local work and select a report-specific
 configuration only when generating that report.
 
+The default `.devcontainer/devcontainer.json` also uses the `development` configuration.
 All profiles install the version from [`lean-toolchain`](lean-toolchain) when
 building the image. Rebuild the image when the pin changes; new containers from
 the same image do not download Lean again. Lake dependencies and the mathlib
 cache are still set up when the dev container is created. For a plain Docker
 build, run `docker build -f .devcontainer/Dockerfile -t mahjong-wait-classification-dev .`
 from the repository root.
+
+All configurations share `.devcontainer/Dockerfile` and include Google Cloud CLI (`gcloud`)
+for remote computation management. Rebuild existing containers to install it, then verify with
+`gcloud --version`. Authenticate separately with `gcloud auth login --no-launch-browser`;
+credentials are not included in the image.
+Go is installed only in the development configurations used to validate the port.
+Run `go test ./mahjong` from the repository root to check agreement with Lean-derived
+reports, among other tests. Tile-report generation validates the Lean classification
+and does not require Go. The remote-compute Docker images do not install Go either.
 
 `hostRequirements` helps services such as Codespaces choose a suitable host; it does not impose
 Docker resource limits. None of the configurations sets Docker CPU or memory limits. After creating
