@@ -121,7 +121,12 @@ deriving BEq, DecidableEq, Repr
 inductive WaitReducibility
 | reducible
 | irreducible
-deriving BEq, DecidableEq, Repr, Fintype
+deriving BEq, DecidableEq, Repr
+
+instance : Fintype WaitReducibility :=
+  Fintype.ofList [WaitReducibility.reducible, WaitReducibility.irreducible] (by
+    intro reducibility
+    cases reducibility <;> simp)
 
 private def completeComponent (component : WinningComponent) : WaitComponent :=
   { kind := match component with

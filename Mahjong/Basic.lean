@@ -52,7 +52,12 @@ end Rank
  | Manzu
  | Pinzu
  | Souzu
-deriving BEq, ReflBEq, LawfulBEq, DecidableEq, Repr, Fintype
+deriving BEq, ReflBEq, LawfulBEq, DecidableEq, Repr
+
+instance : Fintype Suit :=
+  Fintype.ofList [Suit.Manzu, Suit.Pinzu, Suit.Souzu] (by
+    intro suit
+    cases suit <;> simp)
 
 namespace Suit
 
@@ -81,7 +86,14 @@ end Suit
  | White
  | Green
  | Red
-deriving BEq, ReflBEq, LawfulBEq, DecidableEq, Repr, Fintype
+deriving BEq, ReflBEq, LawfulBEq, DecidableEq, Repr
+
+instance : Fintype Honor :=
+  Fintype.ofList
+    [Honor.East, Honor.South, Honor.West, Honor.North, Honor.White, Honor.Green, Honor.Red]
+    (by
+      intro honor
+      cases honor <;> simp)
 
 namespace Honor
 
