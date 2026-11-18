@@ -1,4 +1,5 @@
 import Mahjong.Basic
+import Mahjong.DomainAdapter
 import Mahjong.Pattern
 import Mahjong.WaitCompletion
 import Mahjong.Hand

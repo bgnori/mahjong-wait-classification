@@ -10,6 +10,9 @@ package «mahjong-formalization» where
 require mathlib from git
   "https://github.com/leanprover-community/mathlib4.git" @ "v4.35.0"
 
+require mahjongDomain from git
+  "https://github.com/bgnori/mahjong-domain-core.git" @ "2d63959db4b44a605cfa623a2d582857b316c01b"
+
 @[default_target]
 lean_lib «Mahjong» where
   -- Mahjong study modules.
