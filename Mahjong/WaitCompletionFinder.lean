@@ -1,3 +1,4 @@
+import Mahjong.PartsAdapter
 import Mahjong.WaitCompletion
 
 /-!
@@ -307,6 +308,42 @@ theorem mem_winningPartitions_iff_spec (tiles : List Tile)
       exact ⟨pair, pairCandidate, by simp [removePair]⟩
     · exact List.mem_map.mpr ⟨mentsu, mentsuMember, rfl⟩
 
+/-- 分類側の分解仕様から、対応する共有通常形完成の証人を構成する。 -/
+theorem WinningPartitionSpec.toDomainStandardCompletion {tiles : List Tile}
+    {components : List WinningComponent} (specification : WinningPartitionSpec tiles components) :
+    ∃ meldCount, MahjongDomain.StandardCompletion meldCount
+      (Mahjong.DomainAdapter.tileListCounts tiles) := by
+  obtain ⟨pairComponent, melds, componentsEq, pairMember, tilesPerm⟩ := specification
+  obtain ⟨pair, pairEq⟩ := pair_of_mem_pairComponentCandidates pairMember
+  subst pairComponent
+  subst components
+  refine ⟨melds.length, ⟨Mahjong.DomainAdapter.toDomainDecomposition pair melds, ?_, ?_⟩⟩
+  · simp [Mahjong.DomainAdapter.toDomainDecomposition,
+      Mahjong.DomainAdapter.toDomainMelds]
+  · rw [MahjongDomain.StandardDecomposition.counts_eq_parts]
+    simp only [Mahjong.DomainAdapter.toDomainDecomposition]
+    funext tile
+    have localParts :
+        ((Sum.inl pair : WinningComponent) ::
+            melds.map fun candidate => (Sum.inr candidate : WinningComponent)).flatMap
+            WinningComponent.tiles =
+          pair.tiles ++ melds.flatMap MentsuCandidate.tiles := by
+      simp only [List.flatMap_cons, WinningComponent.tiles]
+      rw [flatMap_mentsuComponents_tiles]
+    have domainPermutation :
+        ((pair.tiles ++ melds.flatMap MentsuCandidate.tiles).map
+          Mahjong.DomainAdapter.toDomainTile).Perm
+          (tiles.map Mahjong.DomainAdapter.toDomainTile) := by
+      simpa only [localParts] using tilesPerm.map Mahjong.DomainAdapter.toDomainTile
+    have countsPermuted := domainPermutation.count tile
+    rw [Mahjong.DomainAdapter.toDomainPair_count,
+      Mahjong.DomainAdapter.toDomainMelds_count,
+      ← Mahjong.DomainAdapter.toDomainTileList_count pair.tiles tile,
+      ← Mahjong.DomainAdapter.toDomainTileList_count
+        (melds.flatMap MentsuCandidate.tiles) tile]
+    rw [← List.count_append]
+    simpa only [List.map_append, Mahjong.DomainAdapter.tileListCounts] using countsPermuted
+
 /-- 外延的な通常和了分割仕様を、同じ牌の別の入力順へ移す。 -/
 theorem WinningPartitionSpec.of_perm {tiles other : List Tile}
     {components : List WinningComponent} (specification : WinningPartitionSpec tiles components)
@@ -346,6 +383,18 @@ instance (tiles : List Tile) : Decidable (IsLegalTenpaiHand tiles) := by
 /-- 牌種列が通常形（雀頭1つと完成面子列）の和了形であること。 -/
 def IsStandardAgari (tiles : List Tile) : Prop :=
   isWinning tiles = true
+
+/-- 既存の通常形和了判定から共有完成仕様の証人を得る。 -/
+theorem IsStandardAgari.toDomainStandardCompletion {tiles : List Tile}
+    (agari : IsStandardAgari tiles) :
+    ∃ meldCount, MahjongDomain.StandardCompletion meldCount
+      (Mahjong.DomainAdapter.tileListCounts tiles) := by
+  have nonempty : winningPartitions tiles ≠ [] := by
+    unfold IsStandardAgari isWinning at agari
+    simpa [List.isEmpty_iff] using agari
+  obtain ⟨components, member⟩ := List.exists_mem_of_ne_nil _ nonempty
+  exact (WinningPartitionSpec.toDomainStandardCompletion
+    ((mem_winningPartitions_iff_spec _ _).mp member))
 
 /-- 有効な聴牌手に `candidate` を1枚加えると通常形で和了し、5枚目にもならないこと。 -/
 def IsWaitFor (tiles : List Tile) (candidate : Tile) : Prop :=
@@ -437,10 +486,38 @@ theorem mem_waitingTiles_iff (tiles : List Tile) (candidate : Tile) :
       Bool.and_eq_true]
   · simp [waitingTiles, legal, IsWaitFor]
 
+/-- 既存の合法待ちを共有通常形完成仕様へ接続する。 -/
+theorem IsWaitFor.toDomainWait {tiles : List Tile} {candidate : Tile}
+    (waitFor : IsWaitFor tiles candidate) :
+    IsLegalTenpaiHand tiles ∧
+      tiles.count candidate < copiesPerTile ∧
+      ∃ meldCount, MahjongDomain.StandardCompletion meldCount
+        (Mahjong.DomainAdapter.tileListCounts (candidate :: tiles)) :=
+  ⟨waitFor.1, waitFor.2.1, waitFor.2.2.toDomainStandardCompletion⟩
+
+/-- 列挙された合法待ちが対応する共有完成証人を持つことを示す。 -/
+theorem waitingTiles_member_toDomainWait {tiles : List Tile} {candidate : Tile}
+    (member : candidate ∈ waitingTiles tiles) :
+    IsLegalTenpaiHand tiles ∧
+      tiles.count candidate < copiesPerTile ∧
+      ∃ meldCount, MahjongDomain.StandardCompletion meldCount
+        (Mahjong.DomainAdapter.tileListCounts (candidate :: tiles)) :=
+  ((mem_waitingTiles_iff tiles candidate).mp member).toDomainWait
+
 example : .honor .Red ∈ waitingTiles [.honor .Red] := by
   apply (mem_waitingTiles_iff _ _).mpr
   unfold IsWaitFor IsStandardAgari
   native_decide
+
+example :
+    ∃ meldCount, MahjongDomain.StandardCompletion meldCount
+      (Mahjong.DomainAdapter.tileListCounts
+        [.honor .Red, .honor .Red, .honor .East, .honor .East, .honor .East]) := by
+  have waitFor : IsWaitFor
+        [.honor .Red, .honor .East, .honor .East, .honor .East] (.honor .Red) := by
+    unfold IsWaitFor IsStandardAgari
+    native_decide
+  exact waitFor.toDomainWait.2.2
 
 /--
 `waitingTiles` が少なくとも1種類の牌を返すことと、意味論上の通常形聴牌 `IsTenpai` は同値である。
