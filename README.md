@@ -19,6 +19,13 @@ precedence.
 - Keep examples executable with `example ... := by native_decide` where possible.
 - Grow proofs alongside computation instead of treating documentation, tests, and implementation as separate artifacts.
 
+## Multi-repository development
+
+When the three repositories are siblings under the same directory, open
+`mahjong.code-workspace` from their parent directory. The Lake configuration
+uses the local `../mahjong-domain-core` checkout so edits to the shared domain
+are available immediately.
+
 ## Project Layout
 
 ```text
