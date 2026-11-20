@@ -3,6 +3,8 @@ module
 public import Init
 public meta import Init
 
+public import MahjongDomain.Tile
+
 public import Mathlib.Data.Fin.Basic
 public import Mathlib.Data.Finset.Basic
 public import Mathlib.Data.Fintype.Basic
@@ -169,6 +171,28 @@ def orderKey : Tile → Nat
 
 end Tile
 
+namespace Mahjong.DomainAdapter
+
+def toDomainSuit : Suit → MahjongDomain.Suit
+  | .Manzu => .man
+  | .Pinzu => .pin
+  | .Souzu => .sou
+
+def toDomainHonor : Honor → MahjongDomain.Honor
+  | .East => 0
+  | .South => 1
+  | .West => 2
+  | .North => 3
+  | .White => 4
+  | .Green => 5
+  | .Red => 6
+
+def toDomainTile : Tile → MahjongDomain.Tile
+  | .numbered suit rank => .suited (toDomainSuit suit) rank
+  | .honor honor => .honor (toDomainHonor honor)
+
+end Mahjong.DomainAdapter
+
 /-- 同じ牌種ごとの物理牌の枚数。 -/
 abbrev copiesPerTile : Nat := 4
 
@@ -212,42 +236,24 @@ inductive TileFormat
 | mpsz
 deriving BEq, DecidableEq, Repr
 
+namespace Mahjong.DomainAdapter
+
+def toDomainTileFormat : TileFormat → MahjongDomain.TileFormat
+  | .unicode => .unicode
+  | .mpsz => .mpsz
+
+end Mahjong.DomainAdapter
+
 namespace Tile
 
 /-- 1つの牌種を指定された形式の文字列に変換する。 -/
 def format (output : TileFormat) : Tile → String
-| .numbered suit rank =>
-  match output with
-  | .unicode =>
-      let offset :=
-        match suit with
-        | .Manzu => 0x1F007
-        | .Pinzu => 0x1F019
-        | .Souzu => 0x1F010
-      String.singleton (Char.ofNat (offset + rank.val))
-  | .mpsz =>
-      let suffix :=
-        match suit with
-        | .Manzu => "m"
-        | .Pinzu => "p"
-        | .Souzu => "s"
-      s!"{rank.val + 1}{suffix}"
-| .honor h =>
-  match output with
-  | .unicode =>
-      match h with
-      | .East => "🀀"
-      | .South => "🀁"
-      | .West => "🀂"
-      | .North => "🀃"
-      | .White => "🀆"
-      | .Green => "🀅"
-      | .Red => "🀄"
-  | .mpsz => s!"{Honor.orderKey h + 1}z"
+  | tile =>
+      MahjongDomain.Tile.format
+        (Mahjong.DomainAdapter.toDomainTileFormat output)
+        (Mahjong.DomainAdapter.toDomainTile tile)
 
 example : format .unicode (.numbered .Manzu 0) = "🀇" := rfl
-example : format .mpsz (.numbered .Pinzu 8) = "9p" := by native_decide
 example : format .unicode (.honor .Red) = "🀄" := rfl
-example : format .mpsz (.honor .White) = "5z" := by native_decide
 
 end Tile

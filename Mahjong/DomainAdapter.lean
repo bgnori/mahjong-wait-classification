@@ -15,11 +15,6 @@ make the correspondence with the shared normalized tile model explicit.
 
 namespace Mahjong.DomainAdapter
 
-def toDomainSuit : Suit → MahjongDomain.Suit
-  | .Manzu => .man
-  | .Pinzu => .pin
-  | .Souzu => .sou
-
 def ofDomainSuit : MahjongDomain.Suit → Suit
   | .man => .Manzu
   | .pin => .Pinzu
@@ -32,15 +27,6 @@ theorem ofDomainSuit_toDomainSuit (suit : Suit) :
 theorem toDomainSuit_ofDomainSuit (suit : MahjongDomain.Suit) :
     toDomainSuit (ofDomainSuit suit) = suit := by
   cases suit <;> rfl
-
-def toDomainHonor : Honor → MahjongDomain.Honor
-  | .East => 0
-  | .South => 1
-  | .West => 2
-  | .North => 3
-  | .White => 4
-  | .Green => 5
-  | .Red => 6
 
 def ofDomainHonor (rank : MahjongDomain.Honor) : Honor :=
   match rank.val with
@@ -59,10 +45,6 @@ theorem ofDomainHonor_toDomainHonor (honor : Honor) :
 theorem toDomainHonor_ofDomainHonor (honor : MahjongDomain.Honor) :
     toDomainHonor (ofDomainHonor honor) = honor := by
   fin_cases honor <;> rfl
-
-def toDomainTile : Tile → MahjongDomain.Tile
-  | .numbered suit rank => .suited (toDomainSuit suit) rank
-  | .honor honor => .honor (toDomainHonor honor)
 
 def ofDomainTile : MahjongDomain.Tile → Tile
   | .suited suit rank => .numbered (ofDomainSuit suit) rank
