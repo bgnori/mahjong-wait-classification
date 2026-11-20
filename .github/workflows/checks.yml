@@ -1,0 +1,55 @@
+name: Checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lean:
+    name: Lean regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      LEAN_NUM_THREADS: "2"
+      MATHLIB_NO_CACHE_ON_UPDATE: "1"
+    defaults:
+      run:
+        working-directory: mahjong-formalization
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          path: mahjong-formalization
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          repository: bgnori/mahjong-domain-core
+          ref: main
+          path: mahjong-domain-core
+      - name: Record tested revisions
+        run: |
+          for repository in mahjong-domain-core mahjong-formalization; do
+            printf '%s: %s\n' "$repository" "$(git -C "../$repository" rev-parse HEAD)" \
+              >> "$GITHUB_STEP_SUMMARY"
+          done
+      - name: Install elan
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o "$RUNNER_TEMP/elan-init.sh"
+          sh "$RUNNER_TEMP/elan-init.sh" -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Install pinned Lean toolchain
+        run: elan toolchain install "$(cat lean-toolchain)"
+      - name: Fetch imported Mathlib cache
+        run: |
+          lake exe cache get $(find Mahjong MahjongTests ../mahjong-domain-core/MahjongDomain \
+            -name '*.lean' -exec sed -n 's/^\(public \)\?import \(Mathlib\..*\)$/\2/p' {} + | sort -u)
+      - name: Build library and regression tests
+        run: lake build Mahjong MahjongTests

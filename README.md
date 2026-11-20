@@ -26,6 +26,13 @@ When the three repositories are siblings under the same directory, open
 uses the local `../mahjong-domain-core` checkout so edits to the shared domain
 are available immediately.
 
+The [Lean CI](.github/workflows/checks.yml) builds `Mahjong` and `MahjongTests`
+on pushes and pull requests against Core's `main`. Core's CI also tests its
+changes against this repository's `main`, without waiting for a consumer commit.
+Tested commit SHAs are recorded in each run summary. This rolling policy is
+intentional while Core is evolving; exhaustive report generation is not part
+of these checks.
+
 ## Project Layout
 
 ```text

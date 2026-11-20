@@ -23,6 +23,12 @@
 `mahjong.code-workspace` を開きます。Lake は `../mahjong-domain-core` を参照するため、
 共有ドメインの変更を各コンシューマーですぐに利用できます。
 
+[Lean CI](.github/workflows/checks.yml)では、pushとpull requestごとにCoreの`main`を使って
+`Mahjong`と`MahjongTests`をビルドします。Core側のCIでも、変更中のCoreとこのリポジトリの
+`main`を組み合わせて検証するため、利用側のcommitを待たずに影響を確認できます。
+検証した各commitのSHAは実行概要に記録します。Coreが活発に変わる間はこの追従方式とし、
+全列挙レポートの生成はCIの対象に含めません。
+
 ## 構成
 
 ```text

@@ -4,7 +4,7 @@
 Leanの構文やタクティクは [lean-vocabulary.md](lean-vocabulary.md) に置き、ここでは麻雀待ち分類の概念を扱う。
 
 牌種、136物理牌ID、Int37／34種表現、カウント集約、牌種容量の共通定義は、
-[Mahjong Domain Coreの用語集](https://github.com/bgnori/mahjong-domain-core/blob/6cbb59efcc56a45cf0f321b6cc8653d64cdadf57/docs/GLOSSARY.md)
+[Mahjong Domain Coreの用語集](https://github.com/bgnori/mahjong-domain-core/blob/main/docs/GLOSSARY.md)
 を正本とする。この文書は待ち分類固有の分解・順序・可約性の語彙と、
 共通用語との意味差を記録する。
 
