@@ -207,7 +207,10 @@ The default `.devcontainer/devcontainer.json` also uses the `development` config
 All profiles install the version from [`lean-toolchain`](lean-toolchain) when
 building the image. Rebuild the image when the pin changes; new containers from
 the same image do not download Lean again. Lake dependencies and the mathlib
-cache are still set up when the dev container is created. For a plain Docker
+cache are still set up when the dev container is created. All profiles mount
+the host's `~/.cache/mathlib` at `/home/vscode/.cache/mathlib`, so downloaded
+mathlib artifacts are reused across container recreations and sibling projects
+on the same host. For a plain Docker
 build, run `docker build -f .devcontainer/Dockerfile -t mahjong-wait-classification-dev .`
 from the repository root.
 

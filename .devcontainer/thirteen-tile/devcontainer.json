@@ -9,6 +9,13 @@
     "memory": "64gb",
     "storage": "64gb"
   },
+  "mounts": [
+    "source=${localEnv:HOME}/.cache/mathlib,target=/home/vscode/.cache/mathlib,type=bind"
+  ],
+  "containerEnv": {
+    "MATHLIB_CACHE_DIR": "/home/vscode/.cache/mathlib",
+    "MATHLIB_NO_CACHE_ON_UPDATE": "1"
+  },
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {
       "installZsh": false,
