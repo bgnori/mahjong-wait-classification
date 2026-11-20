@@ -3,7 +3,7 @@ package mahjong_test
 import (
 	"testing"
 
-	"github.com/bgnori/mahjong-formalization/mahjong"
+	"github.com/bgnori/mahjong-wait-classification/mahjong"
 )
 
 func TestPublicImportableAPI(t *testing.T) {

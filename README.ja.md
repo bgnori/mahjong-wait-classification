@@ -1,4 +1,4 @@
-# Mahjong Formalization
+# Mahjong Wait Classification
 
 麻雀の数理を Lean 4 で形式化し、計算によって研究するリポジトリです。牌、牌姿、通常形の待ちの意味論、待ち核、既約分類などを、機械検証された仕様と全列挙レポートとして扱います。
 
@@ -6,7 +6,7 @@
 計算結果を移植した従属実装であり、独立した仕様を定めるものではありません。挙動や記述に不一致が
 ある場合は、[`Mahjong/`](Mahjong/) 以下のLean定義を優先します。
 
-[計算結果をWebで見る](https://bgnori.github.io/mahjong-formalization/)
+[計算結果をWebで見る](https://bgnori.github.io/mahjong-wait-classification/)
 
 [English version](README.md)
 
@@ -84,7 +84,7 @@ lake build sevenTileReport
 各細分類には部品関係（Disjointかどうか）と代表牌姿・待ちが含まれるため、同じ分解コードが
 異なる部品関係へ分かれる実例を比較できる。分解コードキーはJSON Viewerで精度が失われないよう
 文字列として格納する。
-生成済みレポートは[公開サイト](https://bgnori.github.io/mahjong-formalization/)で4・7・10・13枚形を
+生成済みレポートは[公開サイト](https://bgnori.github.io/mahjong-wait-classification/)で4・7・10・13枚形を
 選んで閲覧できる。手元のJSONを表示する場合は
 [`reports/report-viewer.html`](reports/report-viewer.html)を開いてレポートを選択またはドロップする。
 各集計・一覧はナビゲーションから切り替えてメイン領域に全幅表示し、長い一覧はページ送りで閲覧できる。
@@ -118,7 +118,7 @@ lake build sevenTileReport
 ### Goからの利用
 
 既約形への分解分類と病的プロファイル判定は、外部モジュールからimportできるGoパッケージ
-`github.com/bgnori/mahjong-formalization/mahjong` としても利用できる。入力はTenhou形式の
+`github.com/bgnori/mahjong-wait-classification/mahjong` としても利用できる。入力はTenhou形式の
 物理牌ID（0〜135）で、赤5も受け付ける。`ClassifyIrreducibleWait` は分解コード・病的プロファイル・
 安定した分類IDを返し、`PathologyProfileForHand` は可約形も含む入力牌姿自体の病的プロファイルを返す。
 このパッケージはLean仕様の従属実装であり、仕様変更は先にLeanへ反映し、その結果にGo実装を

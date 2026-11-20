@@ -1,6 +1,6 @@
 # Go package
 
-The Go package at `github.com/bgnori/mahjong-formalization/mahjong` classifies
+The Go package at `github.com/bgnori/mahjong-wait-classification/mahjong` classifies
 standard-form tenpai hands by wait decomposition and pathology profile. Inputs
 can be supplied as slices of Tenhou's 136 physical tile IDs (`0..135`) or with
 the explicit Int37 APIs described below. Red fives are accepted and treated as
@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/bgnori/mahjong-formalization/mahjong"
+	"github.com/bgnori/mahjong-wait-classification/mahjong"
 )
 
 func main() {

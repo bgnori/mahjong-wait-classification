@@ -234,7 +234,7 @@
   <div id="report" hidden></div>
   <footer>
     牌姿の表記例: <span class="code-list">123m456p789s1234z</span>。字牌は東南西北白發中の順です。
-    <a href="https://github.com/bgnori/mahjong-formalization">計算方法とソースコード</a>
+    <a href="https://github.com/bgnori/mahjong-wait-classification">計算方法とソースコード</a>
   </footer>
 </main>
 
@@ -297,7 +297,7 @@
     section.setAttribute("aria-label", "この計算結果の版");
     const commitLink = element("a", "code-list", revision.commit.slice(0, 12));
     commitLink.href = revision.commitUrl ||
-      `https://github.com/bgnori/mahjong-formalization/commit/${revision.commit}`;
+      `https://github.com/bgnori/mahjong-wait-classification/commit/${revision.commit}`;
     const committedAt = element("time", "", formatDateTime(revision.committedAt));
     committedAt.dateTime = revision.committedAt;
     committedAt.title = revision.committedAt;

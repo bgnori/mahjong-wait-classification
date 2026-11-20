@@ -1,4 +1,4 @@
-# Mahjong Formalization
+# Mahjong Wait Classification
 
 A Lean 4 formalization and computational study of Mahjong mathematics. The project models tiles, tile patterns, standard-form wait semantics, wait cores, and exhaustive classifications, with machine-checked specifications and executable reports.
 
@@ -8,7 +8,7 @@ they do not define independent specifications. If their behavior or
 documentation differs, the Lean definitions under [`Mahjong/`](Mahjong/) take
 precedence.
 
-[Browse the computation results](https://bgnori.github.io/mahjong-formalization/)
+[Browse the computation results](https://bgnori.github.io/mahjong-wait-classification/)
 
 [日本語版はこちら](README.ja.md)
 
@@ -94,7 +94,7 @@ representative hand and waits, so examples of one code group splitting into
 different relations can be compared. Decomposition-code keys are strings so
 JSON viewers preserve their exact value.
 Browse the generated four-, seven-, ten-, and thirteen-tile reports on the
-[public results site](https://bgnori.github.io/mahjong-formalization/). To view a local JSON report,
+[public results site](https://bgnori.github.io/mahjong-wait-classification/). To view a local JSON report,
 open [`reports/report-viewer.html`](reports/report-viewer.html) and select or drop the report.
 Sections are navigated in a full-width main area, with pagination for long lists.
 Each published JSON file and rendered report identifies the commit that last
@@ -139,7 +139,7 @@ classification.
 
 The irreducible decomposition classifier and pathology-profile classifier are
 also available as the importable Go package
-`github.com/bgnori/mahjong-formalization/mahjong`. It accepts Tenhou physical
+`github.com/bgnori/mahjong-wait-classification/mahjong`. It accepts Tenhou physical
 tile IDs (`0..135`), including red fives. `ClassifyIrreducibleWait` returns
 decomposition codes, pathology profile, and stable classification ID;
 `PathologyProfileForHand` checks the input hand itself, including reducible

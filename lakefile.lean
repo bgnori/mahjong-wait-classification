@@ -1,7 +1,7 @@
 import Lake
 open Lake DSL System
 
-package «mahjong-formalization» where
+package «mahjong-wait-classification» where
   leanOptions := #[
     -- Enable well-founded recursion default (useful for dependent types)
     ⟨`autoImplicit, false⟩

@@ -69,7 +69,7 @@ def main() -> None:
     )
     parser.add_argument("output", type=Path)
     args = parser.parse_args()
-    repository = os.environ.get("GITHUB_REPOSITORY", "bgnori/mahjong-formalization")
+    repository = os.environ.get("GITHUB_REPOSITORY", "bgnori/mahjong-wait-classification")
     build(args.output, repository)
 
 
