@@ -156,7 +156,7 @@ components.length = fuel ∧
 `waitDecompositionCodes` は、待ち牌付きentryをコードへ写した後も、異なる待ち牌に由来する同一コードの
 出現回数を保持する。同じ待ち牌とコードの組に対する重複はentry生成時に除かれる。
 実装は `WaitDecompositionCode.lean` の `waitDecompositionCodes` と `[26, 26]` の具体例で確認できる。
-この仕様を [reading-order.md](reading-order.md) と [domain-vocabulary.md](domain-vocabulary.md) に反映した。
+この仕様を [reading-order.md](reading-order.md) と [GLOSSARY.md](GLOSSARY.md) に反映した。
 
 ### Tanki実装変更後の可約・既約レポート差分を確認する
 

@@ -2,7 +2,7 @@
 
 この文書は、Leanを知らない読者が麻雀待ち分類の成果と正しさを追うための読み順を定める。
 未知のLean語彙は [lean-vocabulary.md](lean-vocabulary.md)、麻雀待ち分類のプロジェクト語彙は
-[domain-vocabulary.md](domain-vocabulary.md) を参照する。
+[GLOSSARY.md](GLOSSARY.md) を参照する。
 
 ## 最初の入口
 
@@ -25,7 +25,7 @@
 4. `DirectWaitGeneration.lean` で完成形から待ち導出を直接生成し、既存Finderとの完全対応と有限添字を示す。
 
 各節の「読む前に知る語彙」に未知の項目があれば、先に [lean-vocabulary.md](lean-vocabulary.md) を参照する。
-麻雀固有の「待ち核」「可約」「待ち分解」「待ち導出」などは [domain-vocabulary.md](domain-vocabulary.md) にまとめている。
+麻雀固有の「待ち核」「可約」「待ち分解」「待ち導出」などは [GLOSSARY.md](GLOSSARY.md) にまとめている。
 
 ## 物理牌の枚数を読む
 
@@ -170,7 +170,7 @@
 
 次のまとまりは、`WinningComponent` と `WinningComponent.tiles` である。
 
-先に [domain-vocabulary.md](domain-vocabulary.md) の「和了構成部品」を読む。
+先に [GLOSSARY.md](GLOSSARY.md) の「和了構成部品」を読む。
 
 読む前に知る語彙:
 
@@ -217,7 +217,7 @@
 次の実例は、`WaitCompletion.lean` の `WinningComponent.canonicalize`、
 `CanonicalWinningComponents`、`WinningComponent.canonicalize_eq_of_perm` である。
 
-先に [domain-vocabulary.md](domain-vocabulary.md) の「和了構成部品列の標準順表現」を読む。
+先に [GLOSSARY.md](GLOSSARY.md) の「和了構成部品列の標準順表現」を読む。
 
 読む前に知る語彙:
 
@@ -546,7 +546,7 @@
 次の実例は、`WaitDecompositionCode.lean` の `reducibility`、`determineReducibility`、`reducibility_eq_reducible_iff`、
 `reducibility_eq_irreducible_iff` である。
 
-先に [domain-vocabulary.md](domain-vocabulary.md) の「待ち核集合」と「可約と既約」を読む。
+先に [GLOSSARY.md](GLOSSARY.md) の「待ち核集合」と「可約と既約」を読む。
 
 読む前に知る語彙:
 
@@ -582,7 +582,7 @@
 次の実例は、`WaitDecompositionCode.lean` の `WaitDecomposition`、`WaitCoreExtraction`、
 `extractWaitCore` である。
 
-先に [domain-vocabulary.md](domain-vocabulary.md) の「待ち分解」と「待ち核」を読む。
+先に [GLOSSARY.md](GLOSSARY.md) の「待ち分解」と「待ち核」を読む。
 
 読む前に知る語彙:
 
@@ -610,7 +610,7 @@
 
 次の実例は、`WaitDecompositionCode.lean` の `WaitCore` と `waitCores` である。
 
-先に [domain-vocabulary.md](domain-vocabulary.md) の「待ち核」と「待ち核集合」を読む。
+先に [GLOSSARY.md](GLOSSARY.md) の「待ち核」と「待ち核集合」を読む。
 
 読む前に知る語彙:
 
@@ -633,7 +633,7 @@
 
 次の実例は、`WaitDecompositionCode.lean` の `canReduceMentsuPreservingWaitCores` である。
 
-先に [domain-vocabulary.md](domain-vocabulary.md) の「待ち核集合」と「可約と既約」を読む。
+先に [GLOSSARY.md](GLOSSARY.md) の「待ち核集合」と「可約と既約」を読む。
 
 読む前に知る語彙:
 
@@ -663,7 +663,7 @@
 
 次の実例は、`WaitDecompositionCode.lean` の `componentKindAfterRemovingWait` と `componentAfterRemovingWait` である。
 
-先に [domain-vocabulary.md](domain-vocabulary.md) の「和了構成部品」を読む。
+先に [GLOSSARY.md](GLOSSARY.md) の「和了構成部品」を読む。
 
 読む前に知る語彙:
 
@@ -704,7 +704,7 @@
 
 次の実例は、`WaitDecompositionCode.lean` の `componentDecompositions` である。
 
-先に [domain-vocabulary.md](domain-vocabulary.md) の「和了構成部品」と「待ち分解」を読む。
+先に [GLOSSARY.md](GLOSSARY.md) の「和了構成部品」と「待ち分解」を読む。
 
 読む前に知る語彙:
 
@@ -751,7 +751,7 @@
 
 次の実例は、`WaitDecompositionCode.lean` の `WaitKindDecomposition` と `waitKindDecompositions` である。
 
-先に [domain-vocabulary.md](domain-vocabulary.md) の「待ち分解」を読む。
+先に [GLOSSARY.md](GLOSSARY.md) の「待ち分解」を読む。
 
 読む前に知る語彙:
 
@@ -775,7 +775,7 @@
 次の実例は、`WaitDecompositionCode.lean` の `WaitComponentKind.prime`、`componentProduct`、
 `WaitDecompositionCodeEntry`、`waitDecompositionCodeEntries` である。
 
-先に [domain-vocabulary.md](domain-vocabulary.md) の「待ち分解コード」を読む。
+先に [GLOSSARY.md](GLOSSARY.md) の「待ち分解コード」を読む。
 
 読む前に知る語彙:
 
@@ -799,7 +799,7 @@ $2 \times 13 = 26$、`[tanki, shuntsu, shuntsu]` は $2 \times 13^2 = 338$ に�
 
 次の実例は、`WaitDecompositionCode.lean` の `waitDecompositionCodes` である。
 
-先に [domain-vocabulary.md](domain-vocabulary.md) の「待ち分解コード」を読む。
+先に [GLOSSARY.md](GLOSSARY.md) の「待ち分解コード」を読む。
 
 読む前に知る語彙:
 

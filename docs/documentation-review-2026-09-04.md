@@ -5,13 +5,13 @@
 - ルート README: [README.md](../README.md), [README.ja.md](../README.ja.md)
 - Mahjong モジュール概要: [Mahjong/README.md](../Mahjong/README.md)
 - 計算モジュール概要: [MahjongComputations/README.md](../MahjongComputations/README.md)
-- 読書導線と語彙: [reading-order.md](reading-order.md), [lean-vocabulary.md](lean-vocabulary.md), [domain-vocabulary.md](domain-vocabulary.md), [proof-comment-policy.md](proof-comment-policy.md)
+- 読書導線と語彙: [reading-order.md](reading-order.md), [lean-vocabulary.md](lean-vocabulary.md), [GLOSSARY.md](GLOSSARY.md), [proof-comment-policy.md](proof-comment-policy.md)
 - 設計・命名の保留事項: [review-backlog.md](review-backlog.md)
 - 関連する主要ソースコメント: [Mahjong/WaitDecompositionCode.lean](../Mahjong/WaitDecompositionCode.lean), [Mahjong/DirectWaitGeneration.lean](../Mahjong/DirectWaitGeneration.lean)
 
 ## 総評
 
-現在のドキュメントは、Lean 未経験者が麻雀待ち分類の実装と証明を読むための導線としてよく整理されている。特に、Lean 構文を [lean-vocabulary.md](lean-vocabulary.md) へ逃がし、プロジェクト固有語彙を [domain-vocabulary.md](domain-vocabulary.md) へ分離する方針は、ソースコメントの重複を抑えるうえで有効である。
+現在のドキュメントは、Lean 未経験者が麻雀待ち分類の実装と証明を読むための導線としてよく整理されている。特に、Lean 構文を [lean-vocabulary.md](lean-vocabulary.md) へ逃がし、プロジェクト固有語彙を [GLOSSARY.md](GLOSSARY.md) へ分離する方針は、ソースコメントの重複を抑えるうえで有効である。
 
 一方で、既存実装の変化に対して追随しきれていない小さな古い記述と、長大化した読書順ドキュメントの保守負荷が見える。重大な概念崩れは見つからなかったが、レポート出力名の不一致は利用者が古い成果物を参照する可能性があるため、優先して直す価値がある。
 
@@ -63,7 +63,7 @@
 
 重要度: 低
 
-ルートには英日 README があり、深い docs は日本語中心である。一方、[Mahjong/README.md](../Mahjong/README.md) と [MahjongComputations/README.md](../MahjongComputations/README.md) は英語で、[docs/reading-order.md](reading-order.md) や [docs/domain-vocabulary.md](domain-vocabulary.md) への日本語導線とは少し温度差がある。
+ルートには英日 README があり、深い docs は日本語中心である。一方、[Mahjong/README.md](../Mahjong/README.md) と [MahjongComputations/README.md](../MahjongComputations/README.md) は英語で、[docs/reading-order.md](reading-order.md) や [docs/GLOSSARY.md](GLOSSARY.md) への日本語導線とは少し温度差がある。
 
 影響:
 
@@ -93,7 +93,7 @@
 
 - Lean 一般語彙とプロジェクト語彙の分離が明確で、ソースコメントが構文説明で膨らみにくい。
 - 観測結果を待ち分解、直接生成の証人を待ち導出として区別し、麻雀一般の「待ち読み」との衝突を避けている。
-- `waitDecompositionCodes` が重複を失うことを隠さず、現行仕様と変更候補を [domain-vocabulary.md](domain-vocabulary.md) と [review-backlog.md](review-backlog.md) の両方で追跡している。
+- `waitDecompositionCodes` が重複を失うことを隠さず、現行仕様と変更候補を [GLOSSARY.md](GLOSSARY.md) と [review-backlog.md](review-backlog.md) の両方で追跡している。
 - 仕様定理を「健全性」「完全性」として読む導線が一貫している。
 - 生成レポート、計算量の大きいテスト、通常ビルドを分ける説明は、開発時の期待値を合わせるのに役立っている。
 

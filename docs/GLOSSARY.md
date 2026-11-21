@@ -1,12 +1,17 @@
-# プロジェクト語彙
+# Mahjong Wait Classification Glossary / 麻雀待ち分類用語集
 
-この文書は、麻雀の一般語彙と、このプロジェクト内で使う説明語彙を管理する。
-Leanの構文やタクティクは [lean-vocabulary.md](lean-vocabulary.md) に置き、ここでは麻雀待ち分類の概念を扱う。
+This glossary records terminology specific to wait classification, including
+decomposition, ordering, and reducibility. Shared tile and standard-hand
+definitions are canonical in the [Mahjong Domain Core glossary](https://github.com/bgnori/mahjong-domain-core/blob/main/docs/GLOSSARY.md).
+
+この文書は、待ち分類固有の分解・順序・可約性の語彙と、共通用語との意味差を記録します。
+Leanの構文やタクティクは [lean-vocabulary.md](lean-vocabulary.md) を参照してください。
 
 牌種、136物理牌ID、Int37／34種表現、カウント集約、牌種容量の共通定義は、
 [Mahjong Domain Coreの用語集](https://github.com/bgnori/mahjong-domain-core/blob/main/docs/GLOSSARY.md)
-を正本とする。この文書は待ち分類固有の分解・順序・可約性の語彙と、
-共通用語との意味差を記録する。
+を正本とします。
+
+## Canonical shared-domain terms / 共通ドメイン用語の正本
 
 対子・順子・刻子と雀頭1つ＋指定数の面子による通常形完成は、共通核の
 `Pair`、`Shuntsu`、`MentsuCandidate`、`StandardDecomposition`、`StandardCompletion`を
@@ -15,7 +20,9 @@ Leanの構文やタクティクは [lean-vocabulary.md](lean-vocabulary.md) に�
 多重度を保存し、分類の列挙結果を正規化・重複除去しない。共有型への写像は証明境界で行い、
 順序付き`List Tile`を使う分類処理の表現は維持する。
 
-## 和了構成部品
+## Consumer-specific terms / 利用側固有用語
+
+### Winning components / 和了構成部品
 
 和了構成部品は、通常形の和了を雀頭1つと面子4つに分けたときの、分割済みの各部品を指す
 このプロジェクトの説明語彙である。コード上では `WinningComponent` に対応する。
@@ -29,7 +36,7 @@ Leanの構文やタクティクは [lean-vocabulary.md](lean-vocabulary.md) に�
 `Winning` は「その部品だけで和了している」という意味ではなく、通常形の和了分割を構成する側に
 属することを示す。待ち牌を除いた後の単騎・対子・ターツのような観測成分は含まない。
 
-## 和了構成部品列の標準順表現
+### Canonical winning-component list / 和了構成部品列の標準順表現
 
 和了分割は、内部探索では和了構成部品を並べた `List WinningComponent` として扱われる。
 同じ和了構成部品を同じ個数だけ含むなら、リスト上の順番が違っても同じ和了分割として扱いたい。
@@ -52,7 +59,7 @@ Leanの構文やタクティクは [lean-vocabulary.md](lean-vocabulary.md) に�
 この型は、リスト本体と「そのリストが `WinningComponent.canonicalize` の結果と一致する」という証拠を持つ。
 通常のリストとして処理したい場合は `CanonicalWinningComponents.toList` で取り出す。
 
-## 待ち分解
+### Wait decomposition / 待ち分解
 
 待ち分解は、1つの待ち牌と、その牌を和了分割から1枚除いた後の部品列を表す。
 コード上では `WaitDecomposition` に対応する。
@@ -68,7 +75,7 @@ Leanの構文やタクティクは [lean-vocabulary.md](lean-vocabulary.md) に�
 
 `WaitKindDecomposition` で忘れるのは `WaitComponent.tiles` だけであり、待ち牌と部品種別列は残る。
 
-## 待ち導出
+### Wait derivation / 待ち導出
 
 待ち導出は、通常和了形、待ち牌を除く和了構成部品の位置、待ち牌を保持し、
 完成形からテンパイ牌姿を得る根拠を表す。コード上では `DirectWaitGeneration.WaitDerivation` に対応する。
@@ -87,7 +94,7 @@ WinningShape + selected WinningComponent + wait
 	-> WaitDecompositionCode
 ```
 
-## 待ち分解コード
+### Wait decomposition code / 待ち分解コード
 
 待ち分解コードは、待ち分解に含まれる部品種別の多重集合を1つの自然数で表す内部表現である。
 コード上では `WaitDecompositionCodeEntry.code` に対応する。
@@ -106,7 +113,7 @@ WinningShape + selected WinningComponent + wait
 同じ待ち牌とコードの組は重複除去されるが、異なる待ち牌から同じコードが得られた場合は、
 その重複が `waitDecompositionCodes` のコード列に残る。したがって、このコード列は集合ではなく多重集合である。
 
-## 待ち核
+### Wait core / 待ち核
 
 待ち核は、このプロジェクトで「1つの待ち牌」と「完成面子を除いたあとに残る核成分列」の組を指す説明語彙である。
 コード上では `WaitCore` に対応する。`WaitCore` は `WaitDecomposition` の型別名であり、
@@ -129,7 +136,7 @@ WinningShape + selected WinningComponent + wait
 
 `1/234` のような表記は、待ち核そのものではなく、完成面子 `234m` を分離して待ち牌 `1m` の待ち核を得る分解を表す。
 
-## 待ち核集合
+### Wait-core set / 待ち核集合
 
 1つの牌姿からは、複数の待ち核が得られることがある。
 待ち核集合は、牌姿から得られる `WaitCore` の重複なし集合である。
@@ -148,7 +155,7 @@ WinningShape + selected WinningComponent + wait
 
 つまり、`1/234` と `123/4` は待ち核そのものではなく、2つの待ち核を得るための2つの分解である。
 
-## 可約と既約
+### Reducibility and irreducibility / 可約と既約
 
 可約とは、完成面子を取り除いても待ち核集合が変わらないことを指す。
 既約とは、そのような完成面子除去ができないことを指す。

@@ -48,7 +48,7 @@ APIの重複保持は「異なる待ち牌付きentryごとのコード出現回
 - [WaitDecompositionCode.lean](../Mahjong/WaitDecompositionCode.lean) — `waitDecompositionCodes` と `[26, 26]` の例
 - [reading-order.md](reading-order.md) — APIの情報量と重複の説明
 - [review-backlog.md](review-backlog.md) — 対応状況
-- [domain-vocabulary.md](domain-vocabulary.md) — 多重集合としての現行仕様
+- [GLOSSARY.md](GLOSSARY.md) — 多重集合としての現行仕様
 
 ### 2. 外部record形式の単体テストを追加する余地
 
