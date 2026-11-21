@@ -313,34 +313,35 @@ theorem WinningPartitionSpec.toDomainStandardCompletion {tiles : List Tile}
     {components : List WinningComponent} (specification : WinningPartitionSpec tiles components) :
     ∃ meldCount, MahjongDomain.StandardCompletion meldCount
       (Mahjong.DomainAdapter.tileListCounts tiles) := by
-  obtain ⟨pairComponent, melds, componentsEq, pairMember, tilesPerm⟩ := specification
+  obtain ⟨pairComponent, candidates, componentsEq, pairMember, tilesPerm⟩ := specification
   obtain ⟨pair, pairEq⟩ := pair_of_mem_pairComponentCandidates pairMember
   subst pairComponent
   subst components
-  refine ⟨melds.length, ⟨Mahjong.DomainAdapter.toDomainDecomposition pair melds, ?_, ?_⟩⟩
+  refine ⟨candidates.length,
+    ⟨Mahjong.DomainAdapter.toDomainDecomposition pair candidates, ?_, ?_⟩⟩
   · simp [Mahjong.DomainAdapter.toDomainDecomposition,
-      Mahjong.DomainAdapter.toDomainMelds]
+      Mahjong.DomainAdapter.toDomainMentsuCandidates]
   · rw [MahjongDomain.StandardDecomposition.counts_eq_parts]
     simp only [Mahjong.DomainAdapter.toDomainDecomposition]
     funext tile
     have localParts :
         ((Sum.inl pair : WinningComponent) ::
-            melds.map fun candidate => (Sum.inr candidate : WinningComponent)).flatMap
+            candidates.map fun candidate => (Sum.inr candidate : WinningComponent)).flatMap
             WinningComponent.tiles =
-          pair.tiles ++ melds.flatMap MentsuCandidate.tiles := by
+          pair.tiles ++ candidates.flatMap MentsuCandidate.tiles := by
       simp only [List.flatMap_cons, WinningComponent.tiles]
       rw [flatMap_mentsuComponents_tiles]
     have domainPermutation :
-        ((pair.tiles ++ melds.flatMap MentsuCandidate.tiles).map
+        ((pair.tiles ++ candidates.flatMap MentsuCandidate.tiles).map
           Mahjong.DomainAdapter.toDomainTile).Perm
           (tiles.map Mahjong.DomainAdapter.toDomainTile) := by
       simpa only [localParts] using tilesPerm.map Mahjong.DomainAdapter.toDomainTile
     have countsPermuted := domainPermutation.count tile
     rw [Mahjong.DomainAdapter.toDomainPair_count,
-      Mahjong.DomainAdapter.toDomainMelds_count,
+      Mahjong.DomainAdapter.toDomainMentsuCandidates_count,
       ← Mahjong.DomainAdapter.toDomainTileList_count pair.tiles tile,
       ← Mahjong.DomainAdapter.toDomainTileList_count
-        (melds.flatMap MentsuCandidate.tiles) tile]
+        (candidates.flatMap MentsuCandidate.tiles) tile]
     rw [← List.count_append]
     simpa only [List.map_append, Mahjong.DomainAdapter.tileListCounts] using countsPermuted
 

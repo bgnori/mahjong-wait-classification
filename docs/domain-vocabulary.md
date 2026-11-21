@@ -9,10 +9,11 @@ Leanの構文やタクティクは [lean-vocabulary.md](lean-vocabulary.md) に�
 共通用語との意味差を記録する。
 
 対子・順子・刻子と雀頭1つ＋指定数の面子による通常形完成は、共通核の
-`Pair`、`Meld`、`StandardDecomposition`、`StandardCompletion`を正本とする。
-分類側の`Toitsu`、`MentsuCandidate`、`WinningPartitionSpec`は既存入口と列挙順を保ち、
-`Mahjong.DomainAdapter`で共有型へ写す。共有仕様への接続は各分解の牌種多重度を保存し、
-分類の列挙結果を正規化・重複除去しない。
+`Pair`、`Shuntsu`、`MentsuCandidate`、`StandardDecomposition`、`StandardCompletion`を
+正本とする。分類側の`Toitsu`、`MentsuCandidate`、`WinningPartitionSpec`は既存入口と
+列挙順を保ち、`Mahjong.DomainAdapter`で共有型へ写す。共有仕様への接続は各分解の牌種
+多重度を保存し、分類の列挙結果を正規化・重複除去しない。共有型への写像は証明境界で行い、
+順序付き`List Tile`を使う分類処理の表現は維持する。
 
 ## 和了構成部品
 
