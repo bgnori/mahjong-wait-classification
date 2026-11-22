@@ -8,7 +8,7 @@
 
 1. [introduction.md](introduction.md) で、Lean4と証明付きプログラムが今回の用途で何を支えるかを読む。
 2. [lean-vocabulary.md](lean-vocabulary.md) の「最小語彙」を読む。
-3. `Mahjong/Basic.lean` の牌種定義を読む。
+3. Coreの `MahjongDomain/Tile.lean` の牌種定義と `Mahjong/Basic.lean` を読む。
 4. `Tile.all` が34種類の牌種一覧であることを読む。
 5. `Tile.mem_all` が、その一覧に抜けがないことを保証していることを読む。
 
@@ -40,7 +40,7 @@
 - `simp`
 - `rfl`
 
-ここでは、牌種 `Tile` と「同じ牌種が4枚ある」ことを表す `PhysicalTile` を区別する。
+ここでは、牌種 `Tile` と各物理牌を表すCoreの `PhysicalTileId` を区別する。
 `deck_cardinality` は、物理牌全体の有限集合 `deck` の枚数が `deckSize` と一致すること、つまり
 通常の麻雀牌の総数と同じになることを確認する。
 
@@ -59,17 +59,18 @@
 `mentsuCount` は `Fin (standardHandMentsuCount + 1)` なので、0面子から4面子までの範囲に型で制限される。
 手牌枚数は `standardTenpaiHandSize mentsuCount`、つまり `3n + 1` で決まる。
 
-`tiles` の型は `Fin (standardTenpaiHandSize mentsuCount) ↪ PhysicalTile` である。
-左辺の `Fin` は手牌内の位置を表し、右辺の `PhysicalTile` は「牌種と4枚中の何枚目か」の組を表す。
+`tiles` の型は `Fin (standardTenpaiHandSize mentsuCount) ↪ MahjongDomain.PhysicalTileId` である。
+左辺の `Fin` は手牌内の位置を表し、右辺のIDはTenhou順の0から135の物理牌を表す。
+IDの4による商が牌種index、余りが4枚中のcopy番号である。
 `↪` は埋め込みなので、同じ物理牌が2回現れないこともこの型が担う。
 
 一方、通常形の待ち判定は物理牌そのものではなく、牌種 `Tile` の列を扱う。
-`Hand.tileTypes` は `List.ofFn` で各位置の物理牌を取り出し、その第1成分だけを並べて `List Tile` に変換する。
+`Hand.tileTypes` は `List.ofFn` で各位置の物理牌を取り出し、IDの `tile` を並べて `List Tile` に変換する。
 同じ牌種の別の物理牌は同じ `Tile` として現れるため、ここから先の探索では牌種ごとの枚数をリストの重複として読む。
 
 ## 牌の表示形式を読む
 
-次のまとまりは、`Basic.lean` の `TileFormat` と `Tile.format` である。
+次のまとまりは、Coreの `TileFormat` と `Tile.format` である。
 
 読む前に知る語彙:
 
@@ -101,8 +102,8 @@ Coreの `MahjongDomain.ShuntsuStart.firstRank`、`middleRank`、`lastRank` は�
 
 ## 麻雀の小部品とデータ構造を読む
 
-次のまとまりは、共有 `MahjongDomain.Pair`、`Shuntsu`、`MentsuCandidate` と、
-Coreの順序付き展開と `DomainAdapter.lean` の牌種変換である。
+次のまとまりは、共有 `MahjongDomain.Pair`、`Shuntsu`、`MentsuCandidate` と
+Coreの順序付き展開である。
 
 読む前に知る語彙:
 
@@ -119,8 +120,7 @@ Coreの順序付き展開と `DomainAdapter.lean` の牌種変換である。
 - `Shuntsu`: 同じスートで連続する3枚からなる順子。
 - `MentsuCandidate`: 通常形で完成面子として扱う候補。順子または刻子。
 
-Coreの `Pair.orderedTiles` と `MentsuCandidate.orderedTiles` が部品を牌種列に展開し、
-`DomainAdapter.pairTiles` と `mentsuTiles` が分類側の牌種へ写す。
+Coreの `Pair.orderedTiles` と `MentsuCandidate.orderedTiles` が部品を共有牌種の列に展開する。
 `Tile.format .mpsz` を使った `example` により、対子、順子、刻子が実際の牌姿としてどう見えるかを確認する。
 
 ## 完成面子候補の列挙を読む

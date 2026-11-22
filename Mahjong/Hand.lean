@@ -1,5 +1,7 @@
 import Mahjong.Pattern
 
+open MahjongDomain (Tile Rank Honor TileFormat)
+
 /-!
 # 手牌
 
@@ -15,12 +17,12 @@ import Mahjong.Pattern
 -/
 structure Hand where
   mentsuCount : Fin (standardHandMentsuCount + 1)
-  tiles : Fin (standardTenpaiHandSize mentsuCount) ↪ PhysicalTile
+  tiles : Fin (standardTenpaiHandSize mentsuCount) ↪ MahjongDomain.PhysicalTileId
 
 namespace Hand
 
 /-- 手牌を通常形の意味論が扱う牌種列へ変換する。 -/
-def tileTypes (hand : Hand) : List Tile :=
-  List.ofFn fun index => (hand.tiles index).1
+def tileTypes (hand : Hand) : List MahjongDomain.Tile :=
+  List.ofFn fun index => (hand.tiles index).tile
 
 end Hand

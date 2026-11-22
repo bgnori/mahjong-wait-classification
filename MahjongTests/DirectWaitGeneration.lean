@@ -1,5 +1,7 @@
 import Mahjong.DirectWaitGeneration
 
+open MahjongDomain (Tile Rank Honor TileFormat)
+
 namespace MahjongTests.DirectWaitGeneration
 
 open _root_.DirectWaitGeneration

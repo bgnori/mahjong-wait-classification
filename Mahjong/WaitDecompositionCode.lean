@@ -2,6 +2,8 @@ import Mahjong.Basic
 import Mahjong.Pattern
 import Mahjong.WaitCompletionFinder
 
+open MahjongDomain (Tile Rank Honor TileFormat)
+
 /-!
 # 発見済みWaitCompletionの待ち分解コード
 
@@ -146,13 +148,13 @@ def componentKindAfterRemovingWait (wait : Tile) (component : WinningComponent) 
     Option WaitComponentKind :=
   match component with
     | .inl pair =>
-      if Mahjong.DomainAdapter.ofDomainTile pair.tile == wait then some .tanki else none
+      if pair.tile == wait then some .tanki else none
     | .inr (.koutsu tile) =>
-      if Mahjong.DomainAdapter.ofDomainTile tile == wait then some .toitsu else none
+      if tile == wait then some .toitsu else none
     | .inr (.shuntsu ⟨domainSuit, start⟩) =>
       match wait with
       | .honor _ => none
-      | .numbered waitSuit rank =>
+      | .suited waitSuit rank =>
           if waitSuit != domainSuit then none
           else if rank == MahjongDomain.ShuntsuStart.firstRank start then
             some (if ShuntsuStart.isLast start then .penchan else .ryanmen)
@@ -163,19 +165,19 @@ def componentKindAfterRemovingWait (wait : Tile) (component : WinningComponent) 
           else none
 
       example : componentKindAfterRemovingWait
-        (.numbered .man 4) (WinningComponent.pair (.numbered .man 4)) = some .tanki := rfl
+        (.suited .man 4) (WinningComponent.pair (.suited .man 4)) = some .tanki := rfl
 
       example : componentKindAfterRemovingWait
-        (.numbered .pin 6) (WinningComponent.koutsu (.numbered .pin 6)) = some .toitsu := rfl
+        (.suited .pin 6) (WinningComponent.koutsu (.suited .pin 6)) = some .toitsu := rfl
 
       example : componentKindAfterRemovingWait
-        (.numbered .sou 1) (WinningComponent.shuntsu .sou ⟨1, by decide⟩) = some .ryanmen := rfl
+        (.suited .sou 1) (WinningComponent.shuntsu .sou ⟨1, by decide⟩) = some .ryanmen := rfl
 
       example : componentKindAfterRemovingWait
-        (.numbered .sou 2) (WinningComponent.shuntsu .sou ⟨1, by decide⟩) = some .kanchan := rfl
+        (.suited .sou 2) (WinningComponent.shuntsu .sou ⟨1, by decide⟩) = some .kanchan := rfl
 
       example : componentKindAfterRemovingWait
-        (.numbered .sou 2) (WinningComponent.shuntsu .sou ⟨0, by decide⟩) = some .penchan := rfl
+        (.suited .sou 2) (WinningComponent.shuntsu .sou ⟨0, by decide⟩) = some .penchan := rfl
 
 /--
 和了構成部品から指定した待ち牌を1枚除き、種別と残った牌種列を持つ具体的な不完全部品を作る。
@@ -190,21 +192,21 @@ private def componentAfterRemovingWait (wait : Tile) (component : WinningCompone
     { kind, tiles := component.tiles.erase wait }
 
 example : componentAfterRemovingWait
-    (.numbered .man 4) (WinningComponent.pair (.numbered .man 4)) =
-      some { kind := .tanki, tiles := [.numbered .man 4] } := rfl
+    (.suited .man 4) (WinningComponent.pair (.suited .man 4)) =
+      some { kind := .tanki, tiles := [.suited .man 4] } := rfl
 
 private def componentProduct (components : List WaitComponentKind) : Nat :=
   components.foldl (fun product component => product * component.prime) 1
 
 private def keyDigitOffset : Nat := 1
-private def tileKeyBase : Nat := Tile.count + keyDigitOffset
+private def tileKeyBase : Nat := tileKindCount + keyDigitOffset
 private def maxComponentTiles : Nat := mentsuTileCount
 private def maxWaitComponents : Nat := standardHandMentsuCount + standardHandPairCount
 private def componentTileKeyStride : Nat := tileKeyBase ^ maxComponentTiles
 private def decompositionComponentKeyStride : Nat := WaitComponentKind.count * componentTileKeyStride
 private def decompositionWaitKeyStride : Nat := decompositionComponentKeyStride ^ maxWaitComponents
 private def abstractComponentKeyBase : Nat := WaitComponentKind.count + keyDigitOffset
-private def waitKeyStride : Nat := Tile.count
+private def waitKeyStride : Nat := tileKindCount
 
 private def waitComponentKey (component : WaitComponentKind) : Nat :=
   WaitComponentKind.all.idxOf component
@@ -212,7 +214,7 @@ private def waitComponentKey (component : WaitComponentKind) : Nat :=
 private def concreteComponentKey (component : WaitComponent) : Nat :=
   waitComponentKey component.kind * componentTileKeyStride +
     component.tiles.foldl
-      (fun key tile => key * tileKeyBase + tile.orderKey + keyDigitOffset) 0
+      (fun key tile => key * tileKeyBase + tile.index.val + keyDigitOffset) 0
 
 private def canonicalizeWaitDecomposition
   (components : List WaitComponent) : List WaitComponent :=
@@ -267,7 +269,7 @@ private def relationSignatureLE
     first.code < second.code
 
 def waitDecompositionKey (decomposition : WaitDecomposition) : Nat :=
-  decomposition.wait.orderKey * decompositionWaitKeyStride +
+  decomposition.wait.index.val * decompositionWaitKeyStride +
     decomposition.components.foldl
       (fun key component => key * decompositionComponentKeyStride + concreteComponentKey component) 0
 
@@ -276,10 +278,10 @@ private def waitKindDecompositionKey (decomposition : WaitKindDecomposition) : N
     (fun key component =>
       key * abstractComponentKeyBase + waitComponentKey component + keyDigitOffset) 0 *
       waitKeyStride +
-    decomposition.wait.orderKey
+    decomposition.wait.index.val
 
 private def waitDecompositionCodeEntryKey (entry : WaitDecompositionCodeEntry) : Nat :=
-  entry.code * waitKeyStride + entry.wait.orderKey
+  entry.code * waitKeyStride + entry.wait.index.val
 
 private def deduplicateAndSortBy {α : Type} [BEq α]
     (key : α → Nat) (values : List α) : List α :=
@@ -306,13 +308,13 @@ private def componentDecompositions (completion : WaitCompletion) :
   selectWinningComponent completion.winningComponents.toList
 
 example : componentDecompositions
-    { wait := .numbered .man 4
+    { wait := .suited .man 4
       winningComponents :=
         CanonicalWinningComponents.ofList
-          [WinningComponent.pair (.numbered .man 4), WinningComponent.shuntsu .pin ⟨0, by decide⟩] } =
-    [[{ kind := .tanki, tiles := [.numbered .man 4] },
+          [WinningComponent.pair (.suited .man 4), WinningComponent.shuntsu .pin ⟨0, by decide⟩] } =
+    [[{ kind := .tanki, tiles := [.suited .man 4] },
       { kind := .shuntsu, tiles :=
-        [.numbered .pin 0, .numbered .pin 1, .numbered .pin 2] }]] := by
+        [.suited .pin 0, .suited .pin 1, .suited .pin 2] }]] := by
   native_decide
 
 /--
@@ -331,19 +333,19 @@ def waitDecompositions
   deduplicateAndSortBy waitDecompositionKey entries
 
 example : waitDecompositions
-    [{ wait := .numbered .man 4
+    [{ wait := .suited .man 4
        winningComponents :=
          CanonicalWinningComponents.ofList
-           [WinningComponent.shuntsu .pin ⟨0, by decide⟩, WinningComponent.pair (.numbered .man 4)] },
-     { wait := .numbered .man 4
+           [WinningComponent.shuntsu .pin ⟨0, by decide⟩, WinningComponent.pair (.suited .man 4)] },
+     { wait := .suited .man 4
        winningComponents :=
          CanonicalWinningComponents.ofList
-           [WinningComponent.pair (.numbered .man 4), WinningComponent.shuntsu .pin ⟨0, by decide⟩] }] =
-    [{ wait := .numbered .man 4
+           [WinningComponent.pair (.suited .man 4), WinningComponent.shuntsu .pin ⟨0, by decide⟩] }] =
+    [{ wait := .suited .man 4
        components :=
-         [{ kind := .tanki, tiles := [.numbered .man 4] },
+         [{ kind := .tanki, tiles := [.suited .man 4] },
           { kind := .shuntsu, tiles :=
-            [.numbered .pin 0, .numbered .pin 1, .numbered .pin 2] }] }] := by
+            [.suited .pin 0, .suited .pin 1, .suited .pin 2] }] }] := by
   native_decide
 
 private def isCompletedMentsu (component : WaitComponent) : Bool :=
@@ -395,7 +397,7 @@ def waitCoreKeys (cores : List WaitCore) : List Nat :=
 /-- Recover the wait tile kinds from exact core keys (including cached keys). -/
 def waitsFromWaitCoreKeys (keys : List Nat) : List Tile :=
   Tile.all.filter fun tile =>
-    keys.any fun key => key / decompositionWaitKeyStride == tile.orderKey
+    keys.any fun key => key / decompositionWaitKeyStride == tile.index.val
 
 /-- Pathologies are independent of wait-core reducibility and may coexist. -/
 inductive WaitPathology
@@ -465,15 +467,15 @@ def waitKindDecompositions
     |> deduplicateAndSortBy waitKindDecompositionKey
 
 example : waitKindDecompositions
-    [{ wait := .numbered .man 4
+    [{ wait := .suited .man 4
        winningComponents :=
          CanonicalWinningComponents.ofList
-           [WinningComponent.pair (.numbered .man 4), WinningComponent.shuntsu .pin ⟨0, by decide⟩] },
-     { wait := .numbered .man 4
+           [WinningComponent.pair (.suited .man 4), WinningComponent.shuntsu .pin ⟨0, by decide⟩] },
+     { wait := .suited .man 4
        winningComponents :=
          CanonicalWinningComponents.ofList
-           [WinningComponent.pair (.numbered .man 4), WinningComponent.shuntsu .pin ⟨3, by decide⟩] }] =
-    [{ wait := .numbered .man 4, components := [.tanki, .shuntsu] }] := by
+           [WinningComponent.pair (.suited .man 4), WinningComponent.shuntsu .pin ⟨3, by decide⟩] }] =
+    [{ wait := .suited .man 4, components := [.tanki, .shuntsu] }] := by
   native_decide
 
 /--
@@ -492,11 +494,11 @@ def waitDecompositionCodeEntries
     |> deduplicateAndSortBy waitDecompositionCodeEntryKey
 
 example : waitDecompositionCodeEntries
-    [{ wait := .numbered .man 4
+    [{ wait := .suited .man 4
        winningComponents :=
          CanonicalWinningComponents.ofList
-           [WinningComponent.pair (.numbered .man 4), WinningComponent.shuntsu .pin ⟨0, by decide⟩] }] =
-    [{ wait := .numbered .man 4, code := 26 }] := by
+           [WinningComponent.pair (.suited .man 4), WinningComponent.shuntsu .pin ⟨0, by decide⟩] }] =
+    [{ wait := .suited .man 4, code := 26 }] := by
   native_decide
 
 /--
@@ -546,14 +548,14 @@ def waitDecompositionRelationClassification
     signatures := waitDecompositionRelationSignatures completions }
 
 example : waitDecompositionCodes
-    [{ wait := .numbered .man 4
+    [{ wait := .suited .man 4
        winningComponents :=
          CanonicalWinningComponents.ofList
-           [WinningComponent.pair (.numbered .man 4), WinningComponent.shuntsu .pin ⟨0, by decide⟩] },
-     { wait := .numbered .man 5
+           [WinningComponent.pair (.suited .man 4), WinningComponent.shuntsu .pin ⟨0, by decide⟩] },
+     { wait := .suited .man 5
        winningComponents :=
          CanonicalWinningComponents.ofList
-           [WinningComponent.pair (.numbered .man 5), WinningComponent.shuntsu .pin ⟨0, by decide⟩] }] =
+           [WinningComponent.pair (.suited .man 5), WinningComponent.shuntsu .pin ⟨0, by decide⟩] }] =
     [26, 26] := by
   native_decide
 

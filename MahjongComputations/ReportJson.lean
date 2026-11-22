@@ -2,6 +2,8 @@ import Lean
 import MahjongComputations.Common
 import Mahjong.WaitDecompositionCode
 
+open MahjongDomain (Tile Rank Honor TileFormat)
+
 namespace MahjongComputations.ReportJson
 
 open Lean
@@ -115,7 +117,7 @@ def commonSummaryFields (codeGroups : List WaitDecompositionCodeGroup)
   ]
 
 def waitTileCountDistribution (counts : List (Nat × Nat)) : Json :=
-  array <| (List.range Tile.count).map fun index =>
+  array <| (List.range tileKindCount).map fun index =>
     let waitTileKinds := index + 1
     let reportCount :=
       (counts.find? fun entry => entry.1 == waitTileKinds).map Prod.snd |>.getD 0

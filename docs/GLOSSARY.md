@@ -10,7 +10,8 @@ Leanの構文やタクティクは [lean-vocabulary.md](lean-vocabulary.md) を�
 牌種、136物理牌ID、Int37／34種表現、カウント集約、牌種容量の共通定義は、
 [Mahjong Domain Coreの用語集](https://github.com/bgnori/mahjong-domain-core/blob/main/docs/GLOSSARY.md)
 を正本とします。
-スートはCoreの `Suit.man`、`Suit.pin`、`Suit.sou` を直接利用する。
+分類はCoreのスート、牌種、表示形式と `PhysicalTileId` を直接利用する。
+物理牌IDはTenhou順で、商が牌種index、余りがcopy番号である。
 
 ## Canonical shared-domain terms / 共通ドメイン用語の正本
 
@@ -19,8 +20,7 @@ Leanの構文やタクティクは [lean-vocabulary.md](lean-vocabulary.md) を�
 正本とする。分類側は共有`Pair`、`Shuntsu`、`MentsuCandidate`を直接利用する。
 順序付き展開はCoreの`Pair.orderedTiles`、`Shuntsu.orderedTiles`、
 `MentsuCandidate.orderedTiles`を正本とし、順子はランク昇順とする。分類固有の
-候補列挙は分類側に残す。牌種の共有型への移行までは`DomainAdapter.pairTiles`と
-`mentsuTiles`でCoreの列を分類側の牌種へ写す。
+候補列挙は分類側に残す。牌種も共有型を直接使うため、展開時の牌種変換はない。
 共有仕様との牌種多重度の一致と、分類の牌列順・候補列挙順・結果・重複数の維持を
 別々に検証する。共有仕様への接続のために分類の列挙結果を正規化・重複除去しない。
 `WinningPartitionSpec`は分類固有の分割仕様であり、単に名前を

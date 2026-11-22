@@ -1,5 +1,7 @@
 import Mahjong.WaitCompletion
 
+open MahjongDomain (Tile Rank Honor TileFormat)
+
 /-!
 # 待ちと和了分割の探索
 
@@ -66,9 +68,9 @@ theorem exists_removeTiles_eq_some_iff_perm (available wanted remaining : List T
 
 example :
     removeTiles
-        [.numbered .man 4, .numbered .man 4, .numbered .pin 0]
-        [.numbered .man 4] =
-      some [.numbered .man 4, .numbered .pin 0] := by
+        [.suited .man 4, .suited .man 4, .suited .pin 0]
+        [.suited .man 4] =
+      some [.suited .man 4, .suited .pin 0] := by
   native_decide
 
 /--
@@ -102,8 +104,8 @@ theorem removeTiles_append_left (wanted remaining : List Tile) :
 def pairComponentCandidates : List WinningComponent :=
   Tile.all.map .pair
 
-example : WinningComponent.pair (.honor .Red) ∈ pairComponentCandidates := by
-  simp [pairComponentCandidates, Tile.all, Honor.all, WinningComponent.pair]
+example : WinningComponent.pair (.honor Honor.red) ∈ pairComponentCandidates := by
+  exact List.mem_map.mpr ⟨_, Tile.mem_all _, rfl⟩
 
 /--
 任意の雀頭は `pairComponentCandidates` に含まれる。
@@ -117,8 +119,7 @@ theorem pair_mem_pairComponentCandidates (pair : MahjongDomain.Pair) :
     (Sum.inl pair : WinningComponent) ∈ pairComponentCandidates := by
   rcases pair with ⟨tile⟩
   apply List.mem_map.mpr
-  refine ⟨Mahjong.DomainAdapter.ofDomainTile tile, Tile.mem_all _, ?_⟩
-  simp [WinningComponent.pair, Mahjong.DomainAdapter.toDomainTile_ofDomainTile]
+  exact ⟨tile, Tile.mem_all _, rfl⟩
 
 /--
 `pairComponentCandidates` に含まれる和了構成部品は、必ず何らかの雀頭である。
@@ -133,7 +134,7 @@ theorem pair_of_mem_pairComponentCandidates {component : WinningComponent}
     (member : component ∈ pairComponentCandidates) :
     ∃ pair : MahjongDomain.Pair, component = .inl pair := by
   obtain ⟨tile, _, rfl⟩ := List.mem_map.mp member
-  exact ⟨⟨Mahjong.DomainAdapter.toDomainTile tile⟩, rfl⟩
+  exact ⟨⟨tile⟩, rfl⟩
 
 /-!
 ## 牌種列を指定個数の完成面子へ分解する
@@ -157,19 +158,19 @@ def decomposeMentsu : Nat → List Tile → List (List MentsuCandidate)
       if tiles.isEmpty then [[]] else []
   | fuel + 1, tiles =>
       List.flatten (MentsuCandidate.candidates.map fun mentsu =>
-        match removeTiles tiles (Mahjong.DomainAdapter.mentsuTiles mentsu) with
+        match removeTiles tiles (MentsuCandidate.orderedTiles mentsu) with
         | some remaining =>
             (decomposeMentsu fuel remaining).map fun winningComponents => mentsu :: winningComponents
         | none => [])
 
     example : decomposeMentsu 0 [] = [[]] := rfl
-    example : decomposeMentsu 0 [.numbered .man 0] = [] := rfl
+    example : decomposeMentsu 0 [.suited .man 0] = [] := rfl
 
 /-- 面子分割の、除去順に依存しない公開仕様。 -/
 structure MentsuPartitionSpec (fuel : Nat) (tiles : List Tile)
     (components : List MentsuCandidate) : Prop where
   components_length : components.length = fuel
-  tiles_perm : (components.flatMap Mahjong.DomainAdapter.mentsuTiles).Perm tiles
+  tiles_perm : (components.flatMap MentsuCandidate.orderedTiles).Perm tiles
 
 /-- `decomposeMentsu` の列挙所属を、面子数と牌の多重集合からなる外延仕様で読む。 -/
 theorem mem_decomposeMentsu_iff_spec (fuel : Nat) (tiles : List Tile)
@@ -203,17 +204,17 @@ theorem mem_decomposeMentsu_iff_spec (fuel : Nat) (tiles : List Tile)
         simp only [decomposeMentsu] at member
         obtain ⟨generated, generatedMember, member⟩ := List.mem_flatten.mp member
         obtain ⟨mentsu, _, rfl⟩ := List.mem_map.mp generatedMember
-        cases removeEq : removeTiles tiles (Mahjong.DomainAdapter.mentsuTiles mentsu) with
+        cases removeEq : removeTiles tiles (MentsuCandidate.orderedTiles mentsu) with
         | none => simp [removeEq] at member
         | some remaining =>
             rw [removeEq] at member
             obtain ⟨rest, restMember, rfl⟩ := List.mem_map.mp member
             have restSpec := (inductionHypothesis remaining rest).mp restMember
-            have removedPerm : ((Mahjong.DomainAdapter.mentsuTiles mentsu) ++ remaining).Perm tiles :=
-              (exists_removeTiles_eq_some_iff_perm tiles (Mahjong.DomainAdapter.mentsuTiles mentsu) remaining).mp
+            have removedPerm : ((MentsuCandidate.orderedTiles mentsu) ++ remaining).Perm tiles :=
+              (exists_removeTiles_eq_some_iff_perm tiles (MentsuCandidate.orderedTiles mentsu) remaining).mp
                 ⟨remaining, removeEq, .refl remaining⟩
             exact ⟨by simp [restSpec.components_length],
-              (List.Perm.append_left (Mahjong.DomainAdapter.mentsuTiles mentsu) restSpec.tiles_perm).trans removedPerm⟩
+              (List.Perm.append_left (MentsuCandidate.orderedTiles mentsu) restSpec.tiles_perm).trans removedPerm⟩
       · intro specification
         cases components with
         | nil =>
@@ -224,7 +225,7 @@ theorem mem_decomposeMentsu_iff_spec (fuel : Nat) (tiles : List Tile)
               simpa using specification.components_length
             obtain ⟨remaining, removeEq, remainingPerm⟩ :=
               (exists_removeTiles_eq_some_iff_perm
-                tiles (Mahjong.DomainAdapter.mentsuTiles mentsu) (rest.flatMap Mahjong.DomainAdapter.mentsuTiles)).mpr
+                tiles (MentsuCandidate.orderedTiles mentsu) (rest.flatMap MentsuCandidate.orderedTiles)).mpr
                 specification.tiles_perm
             have restMember : rest ∈ decomposeMentsu fuel remaining :=
               (inductionHypothesis remaining rest).mpr ⟨restLength, remainingPerm.symm⟩
@@ -236,13 +237,13 @@ theorem mem_decomposeMentsu_iff_spec (fuel : Nat) (tiles : List Tile)
 
 example :
     [MentsuCandidate.koutsu (.honor ⟨6, by decide⟩)] ∈
-      decomposeMentsu 1 [.honor .Red, .honor .Red, .honor .Red] := by
+      decomposeMentsu 1 [.honor Honor.red, .honor Honor.red, .honor Honor.red] := by
   apply (mem_decomposeMentsu_iff_spec 1 _ _).mpr
   exact ⟨rfl, .refl _⟩
 
 private theorem flatMap_mentsuComponents_tiles (mentsu : List MentsuCandidate) :
     ((mentsu.map fun candidate => (Sum.inr candidate : WinningComponent)).flatMap
-      WinningComponent.tiles) = mentsu.flatMap Mahjong.DomainAdapter.mentsuTiles := by
+      WinningComponent.tiles) = mentsu.flatMap MentsuCandidate.orderedTiles := by
   induction mentsu with
   | nil => rfl
   | cons first rest inductionHypothesis =>
@@ -290,14 +291,14 @@ theorem mem_winningPartitions_iff_spec (tiles : List Tile)
             (List.Perm.append_left pair.tiles mentsuSpec.tiles_perm).trans removedPerm
         exact ⟨pair, mentsu, rfl, pairCandidate, tilesPerm⟩
   · rintro ⟨pair, mentsu, rfl, pairCandidate, permutation⟩
-    let remaining := mentsu.flatMap Mahjong.DomainAdapter.mentsuTiles
+    let remaining := mentsu.flatMap MentsuCandidate.orderedTiles
     have removedPerm : (WinningComponent.tiles pair ++ remaining).Perm tiles := by
       simpa only [List.flatMap_cons, flatMap_mentsuComponents_tiles, remaining] using permutation
     obtain ⟨output, removePair, outputPerm⟩ :=
       (exists_removeTiles_eq_some_iff_perm tiles (WinningComponent.tiles pair) remaining).mpr
         removedPerm
     have outputLength : output.length = mentsu.length * mentsuTileCount :=
-      outputPerm.length_eq.trans (Mahjong.DomainAdapter.flatMap_mentsuTiles_length mentsu)
+      outputPerm.length_eq.trans (MahjongDomain.MentsuCandidateList.flatMap_orderedTiles_length mentsu)
     have fuelEq : mentsu.length = output.length / mentsuTileCount := by
       rw [outputLength]
       simp [mentsuTileCount]
@@ -314,7 +315,7 @@ theorem mem_winningPartitions_iff_spec (tiles : List Tile)
 theorem WinningPartitionSpec.toDomainStandardCompletion {tiles : List Tile}
     {components : List WinningComponent} (specification : WinningPartitionSpec tiles components) :
     ∃ meldCount, MahjongDomain.StandardCompletion meldCount
-      (Mahjong.DomainAdapter.tileListCounts tiles) := by
+      (MahjongDomain.TileCounts.ofList tiles) := by
   obtain ⟨pairComponent, candidates, componentsEq, pairMember, tilesPerm⟩ := specification
   obtain ⟨pair, pairEq⟩ := pair_of_mem_pairComponentCandidates pairMember
   subst pairComponent
@@ -328,22 +329,15 @@ theorem WinningPartitionSpec.toDomainStandardCompletion {tiles : List Tile}
         ((Sum.inl pair : WinningComponent) ::
             candidates.map fun candidate => (Sum.inr candidate : WinningComponent)).flatMap
             WinningComponent.tiles =
-          Mahjong.DomainAdapter.pairTiles pair ++ candidates.flatMap Mahjong.DomainAdapter.mentsuTiles := by
+          MahjongDomain.Pair.orderedTiles pair ++ candidates.flatMap MentsuCandidate.orderedTiles := by
       simp only [List.flatMap_cons, WinningComponent.tiles]
       rw [flatMap_mentsuComponents_tiles]
-    have domainPermutation :
-        ((Mahjong.DomainAdapter.pairTiles pair ++ candidates.flatMap Mahjong.DomainAdapter.mentsuTiles).map
-          Mahjong.DomainAdapter.toDomainTile).Perm
-          (tiles.map Mahjong.DomainAdapter.toDomainTile) := by
-      simpa only [localParts] using tilesPerm.map Mahjong.DomainAdapter.toDomainTile
-    have countsPermuted := domainPermutation.count tile
-    rw [Mahjong.DomainAdapter.pair_count,
-      Mahjong.DomainAdapter.mentsuCandidates_count,
-      ← Mahjong.DomainAdapter.toDomainTileList_count (Mahjong.DomainAdapter.pairTiles pair) tile,
-      ← Mahjong.DomainAdapter.toDomainTileList_count
-        (candidates.flatMap Mahjong.DomainAdapter.mentsuTiles) tile]
+    rw [MahjongDomain.TileCounts.ofList_apply,
+      MahjongDomain.MentsuCandidateList.counts_eq_list_count]
+    change MahjongDomain.TileCounts.ofList pair.orderedTiles tile + _ = _
+    rw [MahjongDomain.TileCounts.ofList_apply]
     rw [← List.count_append]
-    simpa only [List.map_append, Mahjong.DomainAdapter.tileListCounts] using countsPermuted
+    simpa only [localParts] using tilesPerm.count tile
 
 /-- 外延的な通常和了分割仕様を、同じ牌の別の入力順へ移す。 -/
 theorem WinningPartitionSpec.of_perm {tiles other : List Tile}
@@ -389,7 +383,7 @@ def IsStandardAgari (tiles : List Tile) : Prop :=
 theorem IsStandardAgari.toDomainStandardCompletion {tiles : List Tile}
     (agari : IsStandardAgari tiles) :
     ∃ meldCount, MahjongDomain.StandardCompletion meldCount
-      (Mahjong.DomainAdapter.tileListCounts tiles) := by
+      (MahjongDomain.TileCounts.ofList tiles) := by
   have nonempty : winningPartitions tiles ≠ [] := by
     unfold IsStandardAgari isWinning at agari
     simpa [List.isEmpty_iff] using agari
@@ -440,9 +434,9 @@ theorem IsWaitFor.of_perm {tiles other : List Tile} {candidate : Tile}
       simp [otherNonempty]
 
 example : IsWaitFor
-    [.honor .Red, .honor .East, .honor .East, .honor .East] (.honor .Red) := by
+    [.honor Honor.red, .honor Honor.east, .honor Honor.east, .honor Honor.east] (.honor Honor.red) := by
   have original : IsWaitFor
-      [.honor .East, .honor .East, .honor .East, .honor .Red] (.honor .Red) := by
+      [.honor Honor.east, .honor Honor.east, .honor Honor.east, .honor Honor.red] (.honor Honor.red) := by
     unfold IsWaitFor IsStandardAgari
     native_decide
   apply original.of_perm
@@ -493,7 +487,7 @@ theorem IsWaitFor.toDomainWait {tiles : List Tile} {candidate : Tile}
     IsLegalTenpaiHand tiles ∧
       tiles.count candidate < copiesPerTile ∧
       ∃ meldCount, MahjongDomain.StandardCompletion meldCount
-        (Mahjong.DomainAdapter.tileListCounts (candidate :: tiles)) :=
+        (MahjongDomain.TileCounts.ofList (candidate :: tiles)) :=
   ⟨waitFor.1, waitFor.2.1, waitFor.2.2.toDomainStandardCompletion⟩
 
 /-- 列挙された合法待ちが対応する共有完成証人を持つことを示す。 -/
@@ -502,20 +496,20 @@ theorem waitingTiles_member_toDomainWait {tiles : List Tile} {candidate : Tile}
     IsLegalTenpaiHand tiles ∧
       tiles.count candidate < copiesPerTile ∧
       ∃ meldCount, MahjongDomain.StandardCompletion meldCount
-        (Mahjong.DomainAdapter.tileListCounts (candidate :: tiles)) :=
+        (MahjongDomain.TileCounts.ofList (candidate :: tiles)) :=
   ((mem_waitingTiles_iff tiles candidate).mp member).toDomainWait
 
-example : .honor .Red ∈ waitingTiles [.honor .Red] := by
+example : .honor Honor.red ∈ waitingTiles [.honor Honor.red] := by
   apply (mem_waitingTiles_iff _ _).mpr
   unfold IsWaitFor IsStandardAgari
   native_decide
 
 example :
     ∃ meldCount, MahjongDomain.StandardCompletion meldCount
-      (Mahjong.DomainAdapter.tileListCounts
-        [.honor .Red, .honor .Red, .honor .East, .honor .East, .honor .East]) := by
+      (MahjongDomain.TileCounts.ofList
+        [.honor Honor.red, .honor Honor.red, .honor Honor.east, .honor Honor.east, .honor Honor.east]) := by
   have waitFor : IsWaitFor
-        [.honor .Red, .honor .East, .honor .East, .honor .East] (.honor .Red) := by
+        [.honor Honor.red, .honor Honor.east, .honor Honor.east, .honor Honor.east] (.honor Honor.red) := by
     unfold IsWaitFor IsStandardAgari
     native_decide
   exact waitFor.toDomainWait.2.2
@@ -542,9 +536,9 @@ theorem waitingTiles_ne_nil_iff (tiles : List Tile) :
     have member := (mem_waitingTiles_iff tiles candidate).mpr valid
     simp [empty] at member
 
-example : IsTenpai [.honor .Red] := by
+example : IsTenpai [.honor Honor.red] := by
   apply (waitingTiles_ne_nil_iff _).mp
-  exact List.ne_nil_of_mem (a := .honor .Red) (by native_decide)
+  exact List.ne_nil_of_mem (a := .honor Honor.red) (by native_decide)
 
 /--
 待ち牌と、その待ち牌を加えた和了形の正規化済み分割を列挙する。
@@ -596,9 +590,9 @@ theorem CompletionFor.of_perm {tiles other : List Tile} {completion : WaitComple
 
 example {completion : WaitCompletion}
     (valid : CompletionFor
-      [.honor .Red, .honor .East, .honor .East, .honor .East] completion) :
+      [.honor Honor.red, .honor Honor.east, .honor Honor.east, .honor Honor.east] completion) :
     CompletionFor
-      [.honor .East, .honor .Red, .honor .East, .honor .East] completion := by
+      [.honor Honor.east, .honor Honor.red, .honor Honor.east, .honor Honor.east] completion := by
   apply valid.of_perm
   native_decide
 
@@ -667,13 +661,13 @@ theorem findWaitCompletions_ne_nil_iff (tiles : List Tile) :
           ((mem_winningPartitions_iff_spec _ _).mp partitionMember))
     exact List.ne_nil_of_mem completionMember
 
-example : CompletionFor [.honor .Red]
-    { wait := .honor .Red
-      winningComponents := CanonicalWinningComponents.ofList [WinningComponent.pair (.honor .Red)] } := by
+example : CompletionFor [.honor Honor.red]
+    { wait := .honor Honor.red
+      winningComponents := CanonicalWinningComponents.ofList [WinningComponent.pair (.honor Honor.red)] } := by
   apply (mem_findWaitCompletions_iff _ _).mp
-  have output : findWaitCompletions [.honor .Red] =
-      [{ wait := .honor .Red
-         winningComponents := CanonicalWinningComponents.ofList [WinningComponent.pair (.honor .Red)] }] := by
+  have output : findWaitCompletions [.honor Honor.red] =
+      [{ wait := .honor Honor.red
+         winningComponents := CanonicalWinningComponents.ofList [WinningComponent.pair (.honor Honor.red)] }] := by
     native_decide
   simp [output]
 
@@ -693,7 +687,7 @@ instance decidableIsTenpai (tiles : List Tile) : Decidable (IsTenpai tiles) := b
   rw [← waitingTiles_ne_nil_iff]
   infer_instance
 
-example : decide (IsTenpai [.honor .Red]) = true := by
+example : decide (IsTenpai [.honor Honor.red]) = true := by
   native_decide
 
 example : decide (IsTenpai ([] : List Tile)) = false := by
@@ -702,12 +696,12 @@ example : decide (IsTenpai ([] : List Tile)) = false := by
 /-- `tiles` から完成面子を1つ取り除いて得られる牌種リストの候補。 -/
 def mentsuReductions (tiles : List Tile) : List (List Tile) :=
   MentsuCandidate.candidates.filterMap fun mentsu =>
-    removeTiles tiles (Mahjong.DomainAdapter.mentsuTiles mentsu)
+    removeTiles tiles (MentsuCandidate.orderedTiles mentsu)
 
 def manzu (ranks : List Rank) : List Tile :=
-  Tile.numberedTiles .man ranks
+  Tile.suitedTiles .man ranks
 
 def souzu (ranks : List Rank) : List Tile :=
-  Tile.numberedTiles .sou ranks
+  Tile.suitedTiles .sou ranks
 
 end WaitCompletionFinder

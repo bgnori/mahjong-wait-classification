@@ -1,6 +1,8 @@
 import MahjongComputations.Common
 import Std.Sync.Mutex
 
+open MahjongDomain (Tile Rank Honor TileFormat)
+
 /-!
 # External wait-completion records
 

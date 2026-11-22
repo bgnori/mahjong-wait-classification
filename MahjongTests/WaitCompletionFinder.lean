@@ -1,15 +1,17 @@
 import Mahjong.WaitCompletionFinder
+import Mahjong.Hand
 import Mathlib.Util.AssertNoSorry
+
+open MahjongDomain (Tile Rank Honor TileFormat)
 
 namespace MahjongTests.WaitCompletionFinder
 
 open _root_.WaitCompletionFinder
 open MahjongDomain (MentsuCandidate)
 
-assert_no_sorry Mahjong.DomainAdapter.orderedTiles_count
-assert_no_sorry Mahjong.DomainAdapter.pair_count
-assert_no_sorry Mahjong.DomainAdapter.mentsuCandidates_count
-assert_no_sorry Mahjong.DomainAdapter.tileIndex_val
+assert_no_sorry MahjongDomain.TileCounts.ofList_apply
+assert_no_sorry MahjongDomain.MentsuCandidateList.counts_eq_list_count
+assert_no_sorry MahjongDomain.Tile.index_injective
 assert_no_sorry WinningPartitionSpec.toDomainStandardCompletion
 
 /-- Shared suits retain the classification's suit-major order and keys. -/
@@ -18,12 +20,44 @@ example :
     MahjongDomain.Suit.all.map suitOrderKey = [0, 1, 2] := by
   decide
 
-private def testHandA : List Tile := Tile.numberedTiles .man [2, 3, 4, 4, 4] ++
-  Tile.numberedTiles .sou [7, 7]
-private def testHandB : List Tile := Tile.numberedTiles .man [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]
-private def testHandC : List Tile := Tile.numberedTiles .sou [2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
-private def testHandD : List Tile := Tile.numberedTiles .man [1, 1, 2, 2, 3, 3, 4, 4] ++
-  Tile.numberedTiles .sou [6, 6]
+/-- The shared enumeration preserves the former classification key order. -/
+example : Tile.all.map (fun tile => tile.index.val) = List.range 34 := by
+  decide
+
+/-- Every physical ID preserves both the old tile index and copy number encoding. -/
+example (id : MahjongDomain.PhysicalTileId) :
+    ∃ tile : Tile, ∃ copy : Fin 4,
+      id.val = tile.index.val * 4 + copy.val ∧ id.tile = tile := by
+  refine ⟨id.tile, ⟨id.val % 4, by omega⟩, ?_, rfl⟩
+  rw [MahjongDomain.PhysicalTileId.tile_index]
+  change id.val = id.val / 4 * 4 + id.val % 4
+  omega
+
+example :
+    ([16, 17, 52, 53, 88, 89] : List MahjongDomain.PhysicalTileId).map
+        (fun id => id.int37Index.val) = [0, 5, 10, 15, 20, 25] ∧
+    ([16, 17, 52, 53, 88, 89] : List MahjongDomain.PhysicalTileId).map
+        (fun id => id.tile.index.val) = [4, 4, 13, 13, 22, 22] := by
+  decide
+
+private def physicalTestHand : Hand :=
+  { mentsuCount := 1
+    tiles := ⟨fun position =>
+      if position.val = 0 then 17 else if position.val = 1 then 20
+      else if position.val = 2 then 16 else 24, by
+        intro first second equal
+        fin_cases first <;> fin_cases second <;> simp_all⟩ }
+
+example : physicalTestHand.tileTypes =
+    [.suited .man 4, .suited .man 5, .suited .man 4, .suited .man 6] := by
+  decide
+
+private def testHandA : List Tile := Tile.suitedTiles .man [2, 3, 4, 4, 4] ++
+  Tile.suitedTiles .sou [7, 7]
+private def testHandB : List Tile := Tile.suitedTiles .man [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]
+private def testHandC : List Tile := Tile.suitedTiles .sou [2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
+private def testHandD : List Tile := Tile.suitedTiles .man [1, 1, 2, 2, 3, 3, 4, 4] ++
+  Tile.suitedTiles .sou [6, 6]
 private def testHand3456678 : List Tile := manzu [2, 3, 4, 5, 5, 6, 7]
 private def testHand2345678 : List Tile := manzu [1, 2, 3, 4, 5, 6, 7]
 private def testHand3334556 : List Tile := manzu [2, 2, 2, 3, 4, 4, 5]
@@ -33,23 +67,23 @@ private def testHand3335777 : List Tile := manzu [2, 2, 2, 4, 6, 6, 6]
 private def testHand2345555678 : List Tile := manzu [1, 2, 3, 4, 4, 4, 4, 5, 6, 7]
 
 private def manzuPair (rank : Rank) : WinningComponent :=
-  .pair (.numbered .man rank)
+  .pair (.suited .man rank)
 
 private def manzuShuntsu (start : Nat) (valid : start < shuntsuStartCount := by decide) : WinningComponent :=
   .shuntsu .man ⟨start, valid⟩
 
 private def manzuKoutsu (rank : Rank) : WinningComponent :=
-  .koutsu (.numbered .man rank)
+  .koutsu (.suited .man rank)
 
 private def manzuWaitCompletion (wait : Rank) (winningComponents : List WinningComponent) : WaitCompletion :=
-  { wait := .numbered .man wait, winningComponents := CanonicalWinningComponents.ofList winningComponents }
+  { wait := .suited .man wait, winningComponents := CanonicalWinningComponents.ofList winningComponents }
 
 /-- The first and last suited sequences and an honor triplet keep their ordered tile lists. -/
 example :
     (WinningComponent.shuntsu .man ⟨0, by decide⟩).tiles = manzu [0, 1, 2] ∧
     (WinningComponent.shuntsu .sou ⟨6, by decide⟩).tiles = souzu [6, 7, 8] ∧
-    (WinningComponent.koutsu (.honor .Red)).tiles =
-      [.honor .Red, .honor .Red, .honor .Red] := by
+    (WinningComponent.koutsu (.honor Honor.red)).tiles =
+      [.honor Honor.red, .honor Honor.red, .honor Honor.red] := by
   decide
 
 /-- Candidate ordering and repeated candidates are observable in the raw decomposition search. -/

@@ -1,5 +1,7 @@
 import MahjongComputations.ExternalWaitCompletion
 
+open MahjongDomain (Tile Rank Honor TileFormat)
+
 namespace MahjongTests.ExternalWaitCompletion
 
 open MahjongComputations
@@ -13,9 +15,9 @@ private def bytesOf (values : List Nat) : ByteArray :=
 private def record3 : ExternalWaitCompletion.Record :=
   { tiles := Tile.all.take 10
     completion := {
-      wait := .numbered .pin 1
+      wait := .suited .pin 1
       winningComponents := CanonicalWinningComponents.ofList [
-        WinningComponent.pair (.numbered .man 0),
+        WinningComponent.pair (.suited .man 0),
         WinningComponent.shuntsu .man ⟨0, by decide⟩,
         WinningComponent.shuntsu .man ⟨1, by decide⟩,
         WinningComponent.shuntsu .man ⟨2, by decide⟩
@@ -26,9 +28,9 @@ private def record3 : ExternalWaitCompletion.Record :=
 private def record4 : ExternalWaitCompletion.Record :=
   { tiles := Tile.all.take 13
     completion := {
-      wait := .numbered .pin 4
+      wait := .suited .pin 4
       winningComponents := CanonicalWinningComponents.ofList [
-        WinningComponent.pair (.numbered .man 0),
+        WinningComponent.pair (.suited .man 0),
         WinningComponent.shuntsu .man ⟨0, by decide⟩,
         WinningComponent.shuntsu .man ⟨1, by decide⟩,
         WinningComponent.shuntsu .man ⟨2, by decide⟩,

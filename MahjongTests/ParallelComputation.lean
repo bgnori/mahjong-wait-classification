@@ -4,6 +4,8 @@ import MahjongComputations.ThirteenTile
 import MahjongComputations.FourTile
 import MahjongComputations.SevenTile
 
+open MahjongDomain (Tile Rank Honor TileFormat)
+
 namespace MahjongTests.ParallelComputation
 
 open MahjongComputations

@@ -9,7 +9,7 @@
 
 `namespace Tile` から `end Tile` までの内側では、名前が `Tile` の文脈に入る。
 そのため、内側で単に `all` と書かれている場合、文脈上は `Tile.all` を指す。
-名前空間は、`Tile.all`、`MahjongDomain.Suit.all`、`Honor.all` のように、同じ短い名前を安全に使い分けるための仕組みである。
+名前空間は、`Tile.all`、`MahjongDomain.Suit.all` のように、同じ短い名前を安全に使い分けるための仕組みである。
 
 ### open
 
@@ -633,7 +633,7 @@ inductive型のconstructorは、その型の値や証拠を作る方法である
 
 ### Finset
 
-`Finset` は、重複のない有限集合を表す型である。`deck : Finset PhysicalTile` は、山を構成する物理牌全体を
+`Finset` は、重複のない有限集合を表す型である。`deck : Finset MahjongDomain.PhysicalTileId` は、山を構成する物理牌全体を
 有限集合として持つ、という意味になる。
 
 ### `.card`

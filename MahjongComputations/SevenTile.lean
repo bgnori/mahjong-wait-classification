@@ -3,6 +3,8 @@ import Mahjong.WaitDecompositionCode
 import MahjongComputations.Common
 import MahjongComputations.Parallel
 
+open MahjongDomain (Tile Rank Honor TileFormat)
+
 /-!
 # Seven-tile wait computation from direct derivations
 

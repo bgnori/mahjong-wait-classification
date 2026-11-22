@@ -5,6 +5,8 @@ import MahjongComputations.Parallel
 import MahjongComputations.ExternalWaitCompletion
 import MahjongComputations.BucketClassification
 
+open MahjongDomain (Tile Rank Honor TileFormat)
+
 /-!
 # Ten-tile wait computation from direct derivations
 

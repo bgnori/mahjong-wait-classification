@@ -1,6 +1,8 @@
 import Mahjong.WaitDecompositionCode
 import MahjongComputations.Common
 
+open MahjongDomain (Tile Rank Honor TileFormat)
+
 namespace MahjongTests.WaitDecompositionCode
 
 open _root_.WaitDecompositionCode
@@ -75,7 +77,7 @@ theorem sevenTileIrreducibleTenpai_relationClassification_determines_pathologyDe
   native_decide
 
 private def healthySevenTileCounterexample : List Tile :=
-  manzu [2, 3, 4, 4, 4, 4] ++ Tile.numberedTiles .pin [5]
+  manzu [2, 3, 4, 4, 4, 4] ++ Tile.suitedTiles .pin [5]
 
 private def suppressedSevenTileCounterexample : List Tile :=
   manzu [2, 2, 2, 2, 3, 4, 5]
@@ -98,16 +100,16 @@ theorem sevenTileTenpai_relationClassification_doesNotDeterminePathologyDegree :
   native_decide
 
 private def firstHealthyTenTileCounterexample : List Tile :=
-  Tile.numberedTiles .pin [1, 2, 2, 2, 2, 3, 4, 6, 6, 6]
+  Tile.suitedTiles .pin [1, 2, 2, 2, 2, 3, 4, 6, 6, 6]
 
 private def firstAmbiguousTenTileCounterexample : List Tile :=
-  Tile.numberedTiles .sou [2, 2, 2, 4, 5, 5, 5, 5, 6, 7]
+  Tile.suitedTiles .sou [2, 2, 2, 4, 5, 5, 5, 5, 6, 7]
 
 private def secondHealthyTenTileCounterexample : List Tile :=
   manzu [1, 2, 3, 4, 4, 4, 5, 6, 7, 8]
 
 private def secondAmbiguousTenTileCounterexample : List Tile :=
-  Tile.numberedTiles .pin [0, 1, 2, 3, 3, 3, 4, 5, 6, 7]
+  Tile.suitedTiles .pin [0, 1, 2, 3, 3, 3, 4, 5, 6, 7]
 
 private def isIrreducibleTenpaiWithDegree (tiles : List Tile) (degree : Nat) : Bool :=
   let completions := findWaitCompletions tiles
@@ -151,9 +153,9 @@ private def testHand1199 : List Tile := manzu [0, 0, 8, 8]
 /-- Equal classification codes for different waits retain their multiplicity and order. -/
 example :
     waitDecompositionCodeEntries (findWaitCompletions testHand2345678) =
-      [{ wait := .numbered .man 1, code := 338 },
-       { wait := .numbered .man 4, code := 338 },
-       { wait := .numbered .man 7, code := 338 }] ∧
+      [{ wait := .suited .man 1, code := 338 },
+       { wait := .suited .man 4, code := 338 },
+       { wait := .suited .man 7, code := 338 }] ∧
     waitDecompositionCodes (findWaitCompletions testHand2345678) = [338, 338, 338] := by
   native_decide
 
@@ -161,8 +163,8 @@ private def suppressionHand : List Tile :=
   manzu [0, 0, 0, 0, 1, 1, 1, 1, 2, 3, 3, 3, 3]
 
 private def ambiguityHand : List Tile :=
-  Tile.numberedTiles .pin [7, 8] ++
-    Tile.numberedTiles .sou [0, 0, 0, 1, 2, 3, 4, 5, 6, 6, 6]
+  Tile.suitedTiles .pin [7, 8] ++
+    Tile.suitedTiles .sou [0, 0, 0, 1, 2, 3, 4, 5, 6, 6, 6]
 
 example :
     waitsFromWaitCoreKeys (waitCoreKeys (findWaitCores suppressionHand)) = manzu [2] ∧
@@ -178,7 +180,7 @@ example :
     (waitPathologyWitnesses ambiguityHand).length = 1 ∧
     (waitPathologyWitnesses ambiguityHand).all
       (fun w => w.pathology == .redundantAmbiguity &&
-        w.remainingWaits == Tile.numberedTiles .pin [6] &&
+        w.remainingWaits == Tile.suitedTiles .pin [6] &&
         w.originalCoreCount == 2 && w.remainingCoreCount == 1) = true ∧
     waitPathologyWitnesses (manzu [0, 0, 0, 3]) = [] ∧
     waitPathologyWitnesses testHand1234 = [] ∧
@@ -219,23 +221,23 @@ example :
        tileRelation := .disjoint }] ∧
   componentRelation
     { kind := .toitsu, tiles := manzu [0, 0] }
-    { kind := .shuntsu, tiles := Tile.numberedTiles .pin [0, 1, 2] } =
+    { kind := .shuntsu, tiles := Tile.suitedTiles .pin [0, 1, 2] } =
     { firstKind := .toitsu, secondKind := .shuntsu,
       tileRelation := .disjoint } ∧
   componentRelation
     { kind := .toitsu, tiles := manzu [0, 0] }
-    { kind := .toitsu, tiles := [.honor .East, .honor .East] } =
+    { kind := .toitsu, tiles := [.honor Honor.east, .honor Honor.east] } =
     { firstKind := .toitsu, secondKind := .toitsu,
       tileRelation := .disjoint } := by
   native_decide
 
 example :
   waitCoreExtractions (findWaitCompletions testHand1234) =
-      [{ wait := .numbered .man 0,
-         core := [{ kind := .tanki, tiles := [.numbered .man 0] }],
+      [{ wait := .suited .man 0,
+         core := [{ kind := .tanki, tiles := [.suited .man 0] }],
          removedMentsu := [{ kind := .shuntsu, tiles := manzu [1, 2, 3] }] },
-       { wait := .numbered .man 3,
-         core := [{ kind := .tanki, tiles := [.numbered .man 3] }],
+       { wait := .suited .man 3,
+         core := [{ kind := .tanki, tiles := [.suited .man 3] }],
          removedMentsu := [{ kind := .shuntsu, tiles := manzu [0, 1, 2] }] }] := by
   native_decide
 
@@ -260,13 +262,13 @@ example :
 
 example :
   waitKindDecompositions (findWaitCompletions testHand2345678) =
-      [{ wait := .numbered .man 1, components := [.tanki, .shuntsu, .shuntsu] },
-       { wait := .numbered .man 4, components := [.tanki, .shuntsu, .shuntsu] },
-       { wait := .numbered .man 7, components := [.tanki, .shuntsu, .shuntsu] }] ∧
+      [{ wait := .suited .man 1, components := [.tanki, .shuntsu, .shuntsu] },
+       { wait := .suited .man 4, components := [.tanki, .shuntsu, .shuntsu] },
+       { wait := .suited .man 7, components := [.tanki, .shuntsu, .shuntsu] }] ∧
     waitDecompositionCodeEntries (findWaitCompletions testHand2345678) =
-      [{ wait := .numbered .man 1, code := 338 },
-       { wait := .numbered .man 4, code := 338 },
-       { wait := .numbered .man 7, code := 338 }] ∧
+      [{ wait := .suited .man 1, code := 338 },
+       { wait := .suited .man 4, code := 338 },
+       { wait := .suited .man 7, code := 338 }] ∧
     findWaitDecompositionCodes testHand2345678 = [338, 338, 338] ∧
     findWaitDecompositionCodes testHand1167888 = [117, 117, 255, 255] ∧
     findWaitDecompositionCodes testHand1166678 = [117, 117, 255, 255] ∧

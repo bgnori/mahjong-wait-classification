@@ -74,7 +74,7 @@
 麻雀牌の山は `deckSize` 枚、つまり34種類それぞれを `copiesPerTile` 枚ずつ含む。
 
 この定理は、物理牌として扱う山の枚数が通常の麻雀牌の総数と一致することを保証する。
-証明では `deck` の定義を展開し、有限型 `PhysicalTile` 全体の個数が `Tile.count * copiesPerTile`
+証明では `deck` の定義を展開し、有限型 `PhysicalTileId` 全体の個数が `tileKindCount * copiesPerTile`
 になることを確認する。
 
 読むためのLean語彙: `abbrev`, `Finset`, `.card`, `theorem`, `simp`, `rfl`。
@@ -104,9 +104,9 @@
 対子、順子、刻子のように具体例が有効な定義では、`Tile.format .mpsz` を使った `example` を近くに置く。
 
 ```lean
-example : (WinningComponent.pair (.numbered .man 4)).tiles.map (Tile.format .mpsz) = ["5m", "5m"] := rfl
+example : (WinningComponent.pair (.suited .man 4)).tiles.map (Tile.format .mpsz) = ["5m", "5m"] := rfl
 example : (WinningComponent.shuntsu .sou ⟨0, by decide⟩).tiles.map (Tile.format .mpsz) = ["1s", "2s", "3s"] := rfl
-example : (WinningComponent.koutsu (.numbered .pin 6)).tiles.map (Tile.format .mpsz) = ["7p", "7p", "7p"] := rfl
+example : (WinningComponent.koutsu (.suited .pin 6)).tiles.map (Tile.format .mpsz) = ["7p", "7p", "7p"] := rfl
 ```
 
 よい粒度の例:

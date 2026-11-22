@@ -3,6 +3,8 @@ import MahjongComputations.Common
 import MahjongComputations.Parallel
 import MahjongComputations.ExternalWaitCompletion
 
+open MahjongDomain (Tile Rank Honor TileFormat)
+
 /-!
 # Resumable external bucket classification
 

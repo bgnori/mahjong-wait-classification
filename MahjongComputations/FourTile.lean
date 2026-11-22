@@ -2,6 +2,8 @@ import Mahjong.DirectWaitGeneration
 import MahjongComputations.Common
 import MahjongComputations.Parallel
 
+open MahjongDomain (Tile Rank Honor TileFormat)
+
 /-!
 # Exhaustive four-tile wait computation
 

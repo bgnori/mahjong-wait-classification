@@ -53,8 +53,8 @@ jobs:
             -name '*.lean' -exec sed -n 's/^\(public \)\?import \(Mathlib\..*\)$/\2/p' {} + | sort -u)
       - name: Check migrated part declarations are absent
         run: |
-          if test -f Mahjong/PartsAdapter.lean; then
-            echo "Obsolete parts adapter found" >&2
+          if test -f Mahjong/PartsAdapter.lean || test -f Mahjong/DomainAdapter.lean; then
+            echo "Obsolete migration adapter found" >&2
             exit 1
           fi
           if grep -REn "^[[:space:]]*(@\\[[^]]+\\][[:space:]]*)*(namespace|inductive|structure|abbrev|def|theorem)[[:space:]]+(Toitsu|Shuntsu|MentsuCandidate|((to|of)Domain(Pair|MentsuCandidate|Decomposition))[A-Za-z0-9_']*)([[:space:]:(]|$)" Mahjong MahjongComputations MahjongTests; then
@@ -63,6 +63,10 @@ jobs:
           fi
           if grep -REn "^[[:space:]]*(inductive|structure|abbrev|def|theorem)[[:space:]]+(Suit|toDomainSuit|ofDomainSuit|toDomainSuit_ofDomainSuit|ofDomainSuit_toDomainSuit)([[:space:]:(]|$)" Mahjong MahjongComputations MahjongTests; then
             echo "Obsolete local suit declaration or conversion found" >&2
+            exit 1
+          fi
+          if grep -REn "^[[:space:]]*(namespace[[:space:]]+Mahjong\\.DomainAdapter|(inductive|structure|abbrev|def|theorem)[[:space:]]+(Rank|Honor|Tile|TileFormat|PhysicalTile|((to|of)Domain(Tile|Honor|PhysicalTile|TileFormat|Counts))[A-Za-z0-9_']*)([[:space:]:(]|$))" Mahjong MahjongComputations MahjongTests; then
+            echo "Obsolete local tile declaration or adapter found" >&2
             exit 1
           fi
       - name: Build library and regression tests

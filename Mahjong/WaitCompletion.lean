@@ -1,6 +1,8 @@
 import Mahjong.Basic
 import Mahjong.Pattern
 
+open MahjongDomain (Tile Rank Honor TileFormat)
+
 /-!
 # 待ちと和了分割
 
@@ -18,17 +20,17 @@ namespace WinningComponent
 スート、順子の開始位置からキーを決める。後続の `canonicalize` はこのキーの順に和了構成部品を並べる。
 -/
 def orderKey : WinningComponent → Nat
-  | .inl pair => (Mahjong.DomainAdapter.ofDomainTile pair.tile).orderKey
+  | .inl pair => pair.tile.index.val
   | .inr (.shuntsu sequence) =>
-      Tile.count + suitOrderKey sequence.suit *
+      tileKindCount + suitOrderKey sequence.suit *
         shuntsuStartCount + sequence.start.val
   | .inr (.koutsu tile) =>
-      Tile.count + suitCount * shuntsuStartCount +
-        (Mahjong.DomainAdapter.ofDomainTile tile).orderKey
+      tileKindCount + suitCount * shuntsuStartCount +
+        tile.index.val
 
-example : orderKey (WinningComponent.pair (.numbered .man 4)) = 4 := rfl
+example : orderKey (WinningComponent.pair (.suited .man 4)) = 4 := rfl
 example : orderKey (WinningComponent.shuntsu .pin ⟨3, by decide⟩) = 44 := rfl
-example : orderKey (WinningComponent.koutsu (.honor .East)) = 82 := rfl
+example : orderKey (WinningComponent.koutsu (.honor Honor.east)) = 82 := rfl
 
 /--
 和了構成部品の標準順キーが等しければ、元の和了構成部品も等しい。
@@ -71,11 +73,11 @@ def canonicalize (winningComponents : List WinningComponent) : List WinningCompo
 
 example :
     canonicalize
-        [WinningComponent.pair (.numbered .man 4),
+        [WinningComponent.pair (.suited .man 4),
          WinningComponent.shuntsu .pin ⟨3, by decide⟩] =
       canonicalize
         [WinningComponent.shuntsu .pin ⟨3, by decide⟩,
-         WinningComponent.pair (.numbered .man 4)] := by
+         WinningComponent.pair (.suited .man 4)] := by
   native_decide
 
 /--

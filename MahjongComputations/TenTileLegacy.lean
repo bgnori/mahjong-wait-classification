@@ -1,5 +1,7 @@
 import MahjongComputations.TenTile
 
+open MahjongDomain (Tile Rank Honor TileFormat)
+
 /-!
 # Legacy monolithic ten-tile computation
 
