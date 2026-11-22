@@ -15,10 +15,13 @@ Leanの構文やタクティクは [lean-vocabulary.md](lean-vocabulary.md) を�
 
 対子・順子・刻子と雀頭1つ＋指定数の面子による通常形完成は、共通核の
 `Pair`、`Shuntsu`、`MentsuCandidate`、`StandardDecomposition`、`StandardCompletion`を
-正本とする。分類側の`Toitsu`、`MentsuCandidate`、`WinningPartitionSpec`は既存入口と
-列挙順を保ち、`Mahjong.DomainAdapter`で共有型へ写す。共有仕様への接続は各分解の牌種
-多重度を保存し、分類の列挙結果を正規化・重複除去しない。共有型への写像は証明境界で行い、
-順序付き`List Tile`を使う分類処理の表現は維持する。
+正本とする。現状、分類側の`Toitsu`、`MentsuCandidate`、`WinningPartitionSpec`は
+`Mahjong.DomainAdapter`で共有仕様に接続する。移行先では同じ概念の型をCoreから
+直接利用し、順序付き`List Tile`への展開と分類固有の列挙は分類側に残す。
+共有仕様との牌種多重度の一致と、分類の牌列順・候補列挙順・結果・重複数の維持を
+別々に検証する。共有仕様への接続のために分類の列挙結果を正規化・重複除去しない。
+`WinningPartitionSpec`は分類固有の分割仕様であり、単に名前を
+揃えるためにCoreの完成仕様へ統合しない。
 
 ## Consumer-specific terms / 利用側固有用語
 
