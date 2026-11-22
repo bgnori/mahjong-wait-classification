@@ -69,5 +69,9 @@ jobs:
             echo "Obsolete local tile declaration or adapter found" >&2
             exit 1
           fi
+          if grep -REn "^[[:space:]]*(abbrev|def)[[:space:]]+copiesPerTile([[:space:]:(]|$)" Mahjong MahjongComputations MahjongTests; then
+            echo "Obsolete local tile capacity declaration found" >&2
+            exit 1
+          fi
       - name: Build library and regression tests
         run: lake build Mahjong MahjongTests

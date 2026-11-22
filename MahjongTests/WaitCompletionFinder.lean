@@ -13,6 +13,14 @@ assert_no_sorry MahjongDomain.TileCounts.ofList_apply
 assert_no_sorry MahjongDomain.MentsuCandidateList.counts_eq_list_count
 assert_no_sorry MahjongDomain.Tile.index_injective
 assert_no_sorry WinningPartitionSpec.toDomainStandardCompletion
+assert_no_sorry standardCompletion_toStandardAgari
+assert_no_sorry IsStandardAgari.toDomainStandardCompletion_of_length
+
+example : IsWaitFor
+    [.suited .man 0, .suited .man 0, .suited .man 0, .honor Honor.east]
+    (.honor Honor.east) := by
+  unfold IsWaitFor IsStandardAgari
+  native_decide
 
 /-- Shared suits retain the classification's suit-major order and keys. -/
 example :

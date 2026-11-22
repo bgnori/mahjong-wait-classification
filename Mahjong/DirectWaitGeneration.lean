@@ -590,6 +590,8 @@ private theorem derivation_waitFor (derivation : WaitDerivation n) (standard : n
     · intro tile
       have tileCountEq := permutation.count tile
       have shapeCount := shapeLegal tile
+      change (hand derivation).count tile ≤ MahjongDomain.copiesPerTile
+      change derivation.1.shape.tiles.count tile ≤ MahjongDomain.copiesPerTile at shapeCount
       by_cases same : tile = derivation.1.wait
       · subst tile
         simp at tileCountEq
@@ -601,6 +603,9 @@ private theorem derivation_waitFor (derivation : WaitDerivation n) (standard : n
         omega
   · constructor
     · have waitCount := shapeLegal derivation.1.wait
+      change (hand derivation).count derivation.1.wait < MahjongDomain.copiesPerTile
+      change derivation.1.shape.tiles.count derivation.1.wait ≤
+        MahjongDomain.copiesPerTile at waitCount
       simp only [List.count_cons, beq_self_eq_true, ite_true] at countEq
       omega
     · unfold IsStandardAgari isWinning
@@ -645,6 +650,7 @@ private theorem legal_cons_of_waitFor {tiles : List Tile} {wait : Tile}
     (waitFor : IsWaitFor tiles wait) : HasLegalTileCounts (wait :: tiles) := by
   intro tile
   rcases waitFor with ⟨⟨_, legal⟩, waitCount, _⟩
+  change tiles.count wait < MahjongDomain.copiesPerTile at waitCount
   by_cases same : tile = wait
   · subst tile
     simp

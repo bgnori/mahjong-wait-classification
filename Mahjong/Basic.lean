@@ -38,11 +38,8 @@ def suitOrderKey (suit : MahjongDomain.Suit) : Nat :=
 /-- 牌種の総数。 -/
 abbrev tileKindCount : Nat := 34
 
-/-- 同じ牌種ごとの物理牌の枚数。 -/
-abbrev copiesPerTile : Nat := 4
-
 /-- 山を構成する物理牌の総数。 -/
-abbrev deckSize : Nat := tileKindCount * copiesPerTile
+abbrev deckSize : Nat := tileKindCount * MahjongDomain.copiesPerTile
 
 /-- 136枚すべての物理牌からなる山。 -/
 def deck : Finset MahjongDomain.PhysicalTileId :=
@@ -50,4 +47,4 @@ def deck : Finset MahjongDomain.PhysicalTileId :=
 
 /-- 物理牌の山の枚数は34種類それぞれ4枚である。 -/
 theorem deck_cardinality : deck.card = deckSize := by
-  simp [deck, deckSize, tileKindCount, copiesPerTile]
+  simp [deck, deckSize, tileKindCount, MahjongDomain.copiesPerTile]

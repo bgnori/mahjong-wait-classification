@@ -1,7 +1,7 @@
 import Mahjong.DirectWaitGeneration
 import Std.Data.HashMap
 
-open MahjongDomain (Tile Rank Honor TileFormat)
+open MahjongDomain (Tile Rank Honor TileFormat copiesPerTile)
 
 /-!
 # 麻雀計算モジュールの共通処理

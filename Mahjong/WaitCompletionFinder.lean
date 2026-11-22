@@ -1,6 +1,6 @@
 import Mahjong.WaitCompletion
 
-open MahjongDomain (Tile Rank Honor TileFormat)
+open MahjongDomain (Tile Rank Honor TileFormat copiesPerTile)
 
 /-!
 # 待ちと和了分割の探索
@@ -358,7 +358,7 @@ def IsTenpaiHandSize (size : Nat) : Prop :=
 
 /-- 各牌種が物理的な上限枚数を超えていないこと。 -/
 def HasLegalTileCounts (tiles : List Tile) : Prop :=
-  ∀ tile, tiles.count tile ≤ copiesPerTile
+  MahjongDomain.TileCounts.Valid (fun tile => tiles.count tile)
 
 /-- 待ち判定へ渡せる牌種列であること。 -/
 def IsLegalTenpaiHand (tiles : List Tile) : Prop :=
@@ -368,8 +368,9 @@ instance (size : Nat) : Decidable (IsTenpaiHandSize size) := by
   unfold IsTenpaiHandSize
   infer_instance
 
-instance (tiles : List Tile) : Decidable (HasLegalTileCounts tiles) :=
-  Fintype.decidableForallFintype
+instance (tiles : List Tile) : Decidable (HasLegalTileCounts tiles) := by
+  unfold HasLegalTileCounts MahjongDomain.TileCounts.Valid
+  infer_instance
 
 instance (tiles : List Tile) : Decidable (IsLegalTenpaiHand tiles) := by
   unfold IsLegalTenpaiHand
@@ -378,6 +379,49 @@ instance (tiles : List Tile) : Decidable (IsLegalTenpaiHand tiles) := by
 /-- 牌種列が通常形（雀頭1つと完成面子列）の和了形であること。 -/
 def IsStandardAgari (tiles : List Tile) : Prop :=
   isWinning tiles = true
+
+/-- A shared standard decomposition yields a winning partition of the tile list. -/
+theorem standardCompletion_toStandardAgari {tiles : List Tile} {meldCount : Nat}
+    (completion : MahjongDomain.StandardCompletion meldCount
+      (MahjongDomain.TileCounts.ofList tiles)) :
+    IsStandardAgari tiles := by
+  obtain ⟨decomposition, _, counts⟩ := completion
+  let pair := decomposition.pair
+  let melds := decomposition.mentsuCandidates
+  have partsTiles :
+      ((Sum.inl pair : WinningComponent) ::
+          melds.map fun candidate => (Sum.inr candidate : WinningComponent)).flatMap
+          WinningComponent.tiles =
+        MahjongDomain.Pair.orderedTiles pair ++ melds.flatMap MentsuCandidate.orderedTiles := by
+    simp only [List.flatMap_cons, WinningComponent.tiles]
+    rw [flatMap_mentsuComponents_tiles]
+  have partsCounts := decomposition.counts_eq_parts.symm.trans counts
+  have localCounts : ∀ tile : Tile,
+      (MahjongDomain.Pair.orderedTiles pair ++ melds.flatMap MentsuCandidate.orderedTiles).count tile =
+        tiles.count tile := by
+    intro tile
+    have count := congrFun partsCounts tile
+    change MahjongDomain.TileCounts.ofList pair.orderedTiles tile +
+      MahjongDomain.MentsuCandidateList.counts melds tile = _ at count
+    rw [MahjongDomain.TileCounts.ofList_apply,
+      MahjongDomain.MentsuCandidateList.counts_eq_list_count,
+      MahjongDomain.TileCounts.ofList_apply] at count
+    simpa [List.count_append] using count
+  have permutation :
+      (((Sum.inl pair : WinningComponent) ::
+          melds.map fun candidate => (Sum.inr candidate : WinningComponent)).flatMap
+          WinningComponent.tiles).Perm tiles := by
+    apply List.perm_iff_count.mpr
+    intro tile
+    rw [partsTiles, List.count_append]
+    simpa [List.count_append] using localCounts tile
+  have specification : WinningPartitionSpec tiles
+      (.inl pair :: melds.map fun candidate => (Sum.inr candidate : WinningComponent)) :=
+    ⟨.inl pair, melds, rfl, pair_mem_pairComponentCandidates pair, permutation⟩
+  have member := (mem_winningPartitions_iff_spec _ _).mpr specification
+  have nonempty : winningPartitions tiles ≠ [] := List.ne_nil_of_mem member
+  unfold IsStandardAgari isWinning
+  simpa [List.isEmpty_iff] using nonempty
 
 /-- 既存の通常形和了判定から共有完成仕様の証人を得る。 -/
 theorem IsStandardAgari.toDomainStandardCompletion {tiles : List Tile}
@@ -391,10 +435,21 @@ theorem IsStandardAgari.toDomainStandardCompletion {tiles : List Tile}
   exact (WinningPartitionSpec.toDomainStandardCompletion
     ((mem_winningPartitions_iff_spec _ _).mp member))
 
+/-- The tile-list length determines the number of melds in a standard decomposition. -/
+theorem IsStandardAgari.toDomainStandardCompletion_of_length {tiles : List Tile}
+    {meldCount : Nat} (agari : IsStandardAgari tiles)
+    (length : tiles.length = 2 + 3 * meldCount) :
+    MahjongDomain.StandardCompletion meldCount (MahjongDomain.TileCounts.ofList tiles) := by
+  obtain ⟨actualCount, completion⟩ := agari.toDomainStandardCompletion
+  have total := completion.counts_total
+  rw [MahjongDomain.TileCounts.ofList_sum_eq_length] at total
+  have equal : actualCount = meldCount := by omega
+  simpa [equal] using completion
+
 /-- 有効な聴牌手に `candidate` を1枚加えると通常形で和了し、5枚目にもならないこと。 -/
 def IsWaitFor (tiles : List Tile) (candidate : Tile) : Prop :=
   IsLegalTenpaiHand tiles ∧
-    tiles.count candidate < copiesPerTile ∧
+    MahjongDomain.TileCounts.CanAdd (fun tile => tiles.count tile) candidate ∧
     IsStandardAgari (candidate :: tiles)
 
 /--
@@ -421,7 +476,7 @@ theorem IsWaitFor.of_perm {tiles other : List Tile} {candidate : Tile}
     · intro tile
       simpa [permutation.count tile] using legal tile
   · constructor
-    · simpa [permutation.count candidate] using available
+    · simpa [MahjongDomain.TileCounts.CanAdd, permutation.count candidate] using available
     · unfold IsStandardAgari isWinning at winning ⊢
       have nonempty : winningPartitions (candidate :: tiles) ≠ [] := by
         simpa [List.isEmpty_iff] using winning
@@ -478,7 +533,7 @@ theorem mem_waitingTiles_iff (tiles : List Tile) (candidate : Tile) :
     candidate ∈ waitingTiles tiles ↔ IsWaitFor tiles candidate := by
   by_cases legal : IsLegalTenpaiHand tiles
   · simp [waitingTiles, legal, Tile.mem_all, IsWaitFor, IsStandardAgari,
-      Bool.and_eq_true]
+      MahjongDomain.TileCounts.CanAdd, Bool.and_eq_true]
   · simp [waitingTiles, legal, IsWaitFor]
 
 /-- 既存の合法待ちを共有通常形完成仕様へ接続する。 -/

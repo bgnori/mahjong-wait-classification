@@ -12,6 +12,8 @@ Leanの構文やタクティクは [lean-vocabulary.md](lean-vocabulary.md) を�
 を正本とします。
 分類はCoreのスート、牌種、表示形式と `PhysicalTileId` を直接利用する。
 物理牌IDはTenhou順で、商が牌種index、余りがcopy番号である。
+牌種の4枚則はCoreの`copiesPerTile`、`TileCounts.Valid`と`TileCounts.CanAdd`を使い、
+この分類に渡された牌列を対象に適用する。
 
 ## Canonical shared-domain terms / 共通ドメイン用語の正本
 
