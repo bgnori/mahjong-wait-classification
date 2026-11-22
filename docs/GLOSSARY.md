@@ -10,6 +10,7 @@ Leanの構文やタクティクは [lean-vocabulary.md](lean-vocabulary.md) を�
 牌種、136物理牌ID、Int37／34種表現、カウント集約、牌種容量の共通定義は、
 [Mahjong Domain Coreの用語集](https://github.com/bgnori/mahjong-domain-core/blob/main/docs/GLOSSARY.md)
 を正本とします。
+スートはCoreの `Suit.man`、`Suit.pin`、`Suit.sou` を直接利用する。
 
 ## Canonical shared-domain terms / 共通ドメイン用語の正本
 

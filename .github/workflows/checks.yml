@@ -61,5 +61,9 @@ jobs:
             echo "Obsolete local part declaration or conversion found" >&2
             exit 1
           fi
+          if grep -REn "^[[:space:]]*(inductive|structure|abbrev|def|theorem)[[:space:]]+(Suit|toDomainSuit|ofDomainSuit|toDomainSuit_ofDomainSuit|ofDomainSuit_toDomainSuit)([[:space:]:(]|$)" Mahjong MahjongComputations MahjongTests; then
+            echo "Obsolete local suit declaration or conversion found" >&2
+            exit 1
+          fi
       - name: Build library and regression tests
         run: lake build Mahjong MahjongTests

@@ -9,7 +9,7 @@
 
 `namespace Tile` から `end Tile` までの内側では、名前が `Tile` の文脈に入る。
 そのため、内側で単に `all` と書かれている場合、文脈上は `Tile.all` を指す。
-名前空間は、`Tile.all`、`Suit.all`、`Honor.all` のように、同じ短い名前を安全に使い分けるための仕組みである。
+名前空間は、`Tile.all`、`MahjongDomain.Suit.all`、`Honor.all` のように、同じ短い名前を安全に使い分けるための仕組みである。
 
 ### open
 

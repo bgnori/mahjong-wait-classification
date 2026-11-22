@@ -56,31 +56,14 @@ def last : Rank := ⟨numberedRankCount - 1, by decide⟩
 
 end Rank
 
-/-- 数牌の3種類のスート。 -/
- inductive Suit
- | Manzu
- | Pinzu
- | Souzu
-deriving BEq, ReflBEq, LawfulBEq, DecidableEq, Repr
-
-instance : Fintype Suit :=
-  Fintype.ofList [Suit.Manzu, Suit.Pinzu, Suit.Souzu] (by
-    intro suit
-    cases suit <;> simp)
-
-namespace Suit
-
-/-- 数牌の全スートを標準順で並べたリスト。 -/
-def all : List Suit := [.Manzu, .Pinzu, .Souzu]
+deriving instance BEq, ReflBEq, LawfulBEq, Repr for MahjongDomain.Suit
 
 /-- 数牌のスート数。 -/
-def count : Nat := all.length
+def suitCount : Nat := MahjongDomain.Suit.all.length
 
-/-- 標準列挙順に対応するスートのキー。 -/
-def orderKey (suit : Suit) : Nat :=
-  all.idxOf suit
-
-end Suit
+/-- 分類の標準列挙順に対応するスートのキー。 -/
+def suitOrderKey (suit : MahjongDomain.Suit) : Nat :=
+ MahjongDomain.Suit.all.idxOf suit
 
 
 /-!
@@ -123,25 +106,25 @@ end Honor
  -/
 /-- 牌種。数牌はスートとランク、字牌は `Honor` で表す。 -/
  inductive Tile
- | numbered(suit : Suit) (rank : Rank )
+ | numbered(suit : MahjongDomain.Suit) (rank : Rank )
  | honor(h : Honor )
 deriving BEq, ReflBEq, LawfulBEq, DecidableEq, Repr, Fintype
 
 namespace Tile
 
 /-- 数牌の牌種数。 -/
-def numberedCount : Nat := Suit.count * numberedRankCount
+def numberedCount : Nat := suitCount * numberedRankCount
 
 /-- 牌種の総数。 -/
 def count : Nat := numberedCount + Honor.count
 
 /-- 指定したスートとランク列から数牌列を作る。 -/
-def numberedTiles (suit : Suit) (ranks : List Rank) : List Tile :=
+def numberedTiles (suit : MahjongDomain.Suit) (ranks : List Rank) : List Tile :=
   ranks.map (.numbered suit)
 
 /-- 34種類すべての牌種を標準順で並べたリスト。 -/
 def all : List Tile :=
-  (Suit.all.flatMap fun suit =>
+  (MahjongDomain.Suit.all.flatMap fun suit =>
     List.ofFn fun rank : Rank => Tile.numbered suit rank) ++
   Honor.all.map .honor
 
@@ -159,24 +142,19 @@ theorem mem_all (tile : Tile) : tile ∈ all := by
   | numbered suit rank =>
     simp only [all, List.mem_append, List.mem_flatMap]
     left
-    exact ⟨suit, by cases suit <;> simp [Suit.all], List.mem_ofFn.mpr ⟨rank, rfl⟩⟩
+    exact ⟨suit, by cases suit <;> simp [MahjongDomain.Suit.all], List.mem_ofFn.mpr ⟨rank, rfl⟩⟩
   | honor honor =>
       cases honor <;> simp [all, Honor.all]
 
 /-- 標準列挙順に対応する牌種のキー。 -/
 def orderKey : Tile → Nat
   | Tile.numbered suit rank =>
-      Suit.orderKey suit * numberedRankCount + rank.val
+      suitOrderKey suit * numberedRankCount + rank.val
   | Tile.honor honorTile => numberedCount + Honor.orderKey honorTile
 
 end Tile
 
 namespace Mahjong.DomainAdapter
-
-def toDomainSuit : Suit → MahjongDomain.Suit
-  | .Manzu => .man
-  | .Pinzu => .pin
-  | .Souzu => .sou
 
 def toDomainHonor : Honor → MahjongDomain.Honor
   | .East => 0
@@ -188,7 +166,7 @@ def toDomainHonor : Honor → MahjongDomain.Honor
   | .Red => 6
 
 def toDomainTile : Tile → MahjongDomain.Tile
-  | .numbered suit rank => .suited (toDomainSuit suit) rank
+  | .numbered suit rank => .suited suit rank
   | .honor honor => .honor (toDomainHonor honor)
 
 end Mahjong.DomainAdapter
@@ -253,7 +231,7 @@ def format (output : TileFormat) : Tile → String
         (Mahjong.DomainAdapter.toDomainTileFormat output)
         (Mahjong.DomainAdapter.toDomainTile tile)
 
-example : format .unicode (.numbered .Manzu 0) = "🀇" := rfl
+example : format .unicode (.numbered .man 0) = "🀇" := rfl
 example : format .unicode (.honor .Red) = "🀄" := rfl
 
 end Tile

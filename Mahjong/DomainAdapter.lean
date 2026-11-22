@@ -14,23 +14,9 @@ make the correspondence with the shared normalized tile model explicit.
 
 @[expose] public section
 
-deriving instance BEq, ReflBEq, LawfulBEq, Repr for MahjongDomain.Suit
 deriving instance BEq, ReflBEq, LawfulBEq, Repr for MahjongDomain.Tile
 
 namespace Mahjong.DomainAdapter
-
-def ofDomainSuit : MahjongDomain.Suit → Suit
-  | .man => .Manzu
-  | .pin => .Pinzu
-  | .sou => .Souzu
-
-theorem ofDomainSuit_toDomainSuit (suit : Suit) :
-    ofDomainSuit (toDomainSuit suit) = suit := by
-  cases suit <;> rfl
-
-theorem toDomainSuit_ofDomainSuit (suit : MahjongDomain.Suit) :
-    toDomainSuit (ofDomainSuit suit) = suit := by
-  cases suit <;> rfl
 
 def ofDomainHonor (rank : MahjongDomain.Honor) : Honor :=
   match rank.val with
@@ -51,19 +37,19 @@ theorem toDomainHonor_ofDomainHonor (honor : MahjongDomain.Honor) :
   fin_cases honor <;> rfl
 
 def ofDomainTile : MahjongDomain.Tile → Tile
-  | .suited suit rank => .numbered (ofDomainSuit suit) rank
+  | .suited suit rank => .numbered suit rank
   | .honor honor => .honor (ofDomainHonor honor)
 
 theorem ofDomainTile_toDomainTile (tile : Tile) :
     ofDomainTile (toDomainTile tile) = tile := by
   cases tile with
-  | numbered suit rank => cases suit <;> rfl
+  | numbered suit rank => rfl
   | honor honor => cases honor <;> rfl
 
 theorem toDomainTile_ofDomainTile (tile : MahjongDomain.Tile) :
     toDomainTile (ofDomainTile tile) = tile := by
   cases tile with
-  | suited suit rank => cases suit <;> rfl
+  | suited suit rank => rfl
   | honor honor => simp [toDomainTile, ofDomainTile, toDomainHonor_ofDomainHonor]
 
 /-- Adapt Core's ordered pair expansion while classification still uses local tiles. -/
@@ -169,12 +155,12 @@ theorem tileIndex_val (tile : Tile) :
   cases tile with
   | numbered suit rank =>
       cases suit <;>
-        simp [toDomainTile, toDomainSuit, MahjongDomain.Tile.index, Tile.orderKey,
-          Suit.orderKey, Suit.all, numberedRankCount]
+        simp [toDomainTile, MahjongDomain.Tile.index, Tile.orderKey,
+          suitOrderKey, MahjongDomain.Suit.all, numberedRankCount]
   | honor honor =>
       cases honor <;>
         simp [toDomainTile, toDomainHonor, MahjongDomain.Tile.index, Tile.orderKey,
-          Tile.numberedCount, Suit.count, Suit.all, Honor.orderKey, Honor.all,
+          Tile.numberedCount, suitCount, MahjongDomain.Suit.all, Honor.orderKey, Honor.all,
           numberedRankCount]
 
 /-- Convert a local physical tile to its stable 0-based Tenhou ID. -/

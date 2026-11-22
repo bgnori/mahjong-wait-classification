@@ -20,14 +20,14 @@ namespace WinningComponent
 def orderKey : WinningComponent → Nat
   | .inl pair => (Mahjong.DomainAdapter.ofDomainTile pair.tile).orderKey
   | .inr (.shuntsu sequence) =>
-      Tile.count + (Mahjong.DomainAdapter.ofDomainSuit sequence.suit).orderKey *
+      Tile.count + suitOrderKey sequence.suit *
         shuntsuStartCount + sequence.start.val
   | .inr (.koutsu tile) =>
-      Tile.count + Suit.count * shuntsuStartCount +
+      Tile.count + suitCount * shuntsuStartCount +
         (Mahjong.DomainAdapter.ofDomainTile tile).orderKey
 
-example : orderKey (WinningComponent.pair (.numbered .Manzu 4)) = 4 := rfl
-example : orderKey (WinningComponent.shuntsu .Pinzu ⟨3, by decide⟩) = 44 := rfl
+example : orderKey (WinningComponent.pair (.numbered .man 4)) = 4 := rfl
+example : orderKey (WinningComponent.shuntsu .pin ⟨3, by decide⟩) = 44 := rfl
 example : orderKey (WinningComponent.koutsu (.honor .East)) = 82 := rfl
 
 /--
@@ -71,11 +71,11 @@ def canonicalize (winningComponents : List WinningComponent) : List WinningCompo
 
 example :
     canonicalize
-        [WinningComponent.pair (.numbered .Manzu 4),
-         WinningComponent.shuntsu .Pinzu ⟨3, by decide⟩] =
+        [WinningComponent.pair (.numbered .man 4),
+         WinningComponent.shuntsu .pin ⟨3, by decide⟩] =
       canonicalize
-        [WinningComponent.shuntsu .Pinzu ⟨3, by decide⟩,
-         WinningComponent.pair (.numbered .Manzu 4)] := by
+        [WinningComponent.shuntsu .pin ⟨3, by decide⟩,
+         WinningComponent.pair (.numbered .man 4)] := by
   native_decide
 
 /--

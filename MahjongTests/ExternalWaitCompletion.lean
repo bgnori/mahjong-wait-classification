@@ -13,12 +13,12 @@ private def bytesOf (values : List Nat) : ByteArray :=
 private def record3 : ExternalWaitCompletion.Record :=
   { tiles := Tile.all.take 10
     completion := {
-      wait := .numbered .Pinzu 1
+      wait := .numbered .pin 1
       winningComponents := CanonicalWinningComponents.ofList [
-        WinningComponent.pair (.numbered .Manzu 0),
-        WinningComponent.shuntsu .Manzu ⟨0, by decide⟩,
-        WinningComponent.shuntsu .Manzu ⟨1, by decide⟩,
-        WinningComponent.shuntsu .Manzu ⟨2, by decide⟩
+        WinningComponent.pair (.numbered .man 0),
+        WinningComponent.shuntsu .man ⟨0, by decide⟩,
+        WinningComponent.shuntsu .man ⟨1, by decide⟩,
+        WinningComponent.shuntsu .man ⟨2, by decide⟩
       ]
     }
   }
@@ -26,13 +26,13 @@ private def record3 : ExternalWaitCompletion.Record :=
 private def record4 : ExternalWaitCompletion.Record :=
   { tiles := Tile.all.take 13
     completion := {
-      wait := .numbered .Pinzu 4
+      wait := .numbered .pin 4
       winningComponents := CanonicalWinningComponents.ofList [
-        WinningComponent.pair (.numbered .Manzu 0),
-        WinningComponent.shuntsu .Manzu ⟨0, by decide⟩,
-        WinningComponent.shuntsu .Manzu ⟨1, by decide⟩,
-        WinningComponent.shuntsu .Manzu ⟨2, by decide⟩,
-        WinningComponent.shuntsu .Manzu ⟨3, by decide⟩
+        WinningComponent.pair (.numbered .man 0),
+        WinningComponent.shuntsu .man ⟨0, by decide⟩,
+        WinningComponent.shuntsu .man ⟨1, by decide⟩,
+        WinningComponent.shuntsu .man ⟨2, by decide⟩,
+        WinningComponent.shuntsu .man ⟨3, by decide⟩
       ]
     }
   }

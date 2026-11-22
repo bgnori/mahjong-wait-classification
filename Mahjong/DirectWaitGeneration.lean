@@ -159,7 +159,7 @@ private theorem wait_mem_component_of_componentKind_isSome
       cases wait with
       | honor honor => simp [componentKindAfterRemovingWait] at valid
       | numbered waitSuit rank =>
-          by_cases sameSuit : waitSuit = Mahjong.DomainAdapter.ofDomainSuit suit
+          by_cases sameSuit : waitSuit = suit
           · subst waitSuit
             by_cases first : rank = MahjongDomain.ShuntsuStart.firstRank start
             · subst rank
@@ -210,16 +210,16 @@ private theorem componentKind_isSome_of_wait_mem
             subst waitSuit
             subst rank
             simp only [componentKindAfterRemovingWait]
-            rw [show (Mahjong.DomainAdapter.ofDomainSuit suit !=
-              Mahjong.DomainAdapter.ofDomainSuit suit) = false by simp]
+            rw [show (suit !=
+              suit) = false by simp]
             simp only [Bool.false_eq_true, ↓reduceIte]
             split <;> simp
           · injection last with suitEq rankEq
             subst waitSuit
             subst rank
             simp only [componentKindAfterRemovingWait]
-            rw [show (Mahjong.DomainAdapter.ofDomainSuit suit !=
-              Mahjong.DomainAdapter.ofDomainSuit suit) = false by simp]
+            rw [show (suit !=
+              suit) = false by simp]
             simp only [Bool.false_eq_true, ↓reduceIte]
             split
             · simp

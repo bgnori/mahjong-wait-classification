@@ -492,7 +492,7 @@ def countOccurrences (values : List Nat) : List (Nat × Nat) :=
   values.foldl (fun counts value => incrementCount value counts) []
 
 private def formatNumberedGroup
-    (tiles : List Tile) (suit : Suit) (suffix : String) : String :=
+    (tiles : List Tile) (suit : MahjongDomain.Suit) (suffix : String) : String :=
   let digits := (List.ofFn fun rank : Rank => rank).flatMap fun rank =>
     List.replicate (tiles.count (.numbered suit rank)) (toString (rank.val + 1))
   if digits.isEmpty then "" else String.join digits ++ suffix
@@ -505,9 +505,9 @@ private def formatHonorGroup (tiles : List Tile) : String :=
 /-- 牌種列をスートごとにまとめた省略表記へ変換する。 -/
 def formatTiles (tiles : List Tile) : String :=
   String.join <| [
-    formatNumberedGroup tiles .Manzu "m",
-    formatNumberedGroup tiles .Pinzu "p",
-    formatNumberedGroup tiles .Souzu "s",
+    formatNumberedGroup tiles .man "m",
+    formatNumberedGroup tiles .pin "p",
+    formatNumberedGroup tiles .sou "s",
     formatHonorGroup tiles
   ].filter fun group => !group.isEmpty
 

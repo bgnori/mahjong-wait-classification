@@ -104,9 +104,9 @@
 対子、順子、刻子のように具体例が有効な定義では、`Tile.format .mpsz` を使った `example` を近くに置く。
 
 ```lean
-example : (WinningComponent.pair (.numbered .Manzu 4)).tiles.map (Tile.format .mpsz) = ["5m", "5m"] := rfl
-example : (WinningComponent.shuntsu .Souzu ⟨0, by decide⟩).tiles.map (Tile.format .mpsz) = ["1s", "2s", "3s"] := rfl
-example : (WinningComponent.koutsu (.numbered .Pinzu 6)).tiles.map (Tile.format .mpsz) = ["7p", "7p", "7p"] := rfl
+example : (WinningComponent.pair (.numbered .man 4)).tiles.map (Tile.format .mpsz) = ["5m", "5m"] := rfl
+example : (WinningComponent.shuntsu .sou ⟨0, by decide⟩).tiles.map (Tile.format .mpsz) = ["1s", "2s", "3s"] := rfl
+example : (WinningComponent.koutsu (.numbered .pin 6)).tiles.map (Tile.format .mpsz) = ["7p", "7p", "7p"] := rfl
 ```
 
 よい粒度の例:

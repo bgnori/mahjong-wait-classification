@@ -9,14 +9,21 @@ open MahjongDomain (MentsuCandidate)
 assert_no_sorry Mahjong.DomainAdapter.orderedTiles_count
 assert_no_sorry Mahjong.DomainAdapter.pair_count
 assert_no_sorry Mahjong.DomainAdapter.mentsuCandidates_count
+assert_no_sorry Mahjong.DomainAdapter.tileIndex_val
 assert_no_sorry WinningPartitionSpec.toDomainStandardCompletion
 
-private def testHandA : List Tile := Tile.numberedTiles .Manzu [2, 3, 4, 4, 4] ++
-  Tile.numberedTiles .Souzu [7, 7]
-private def testHandB : List Tile := Tile.numberedTiles .Manzu [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]
-private def testHandC : List Tile := Tile.numberedTiles .Souzu [2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
-private def testHandD : List Tile := Tile.numberedTiles .Manzu [1, 1, 2, 2, 3, 3, 4, 4] ++
-  Tile.numberedTiles .Souzu [6, 6]
+/-- Shared suits retain the classification's suit-major order and keys. -/
+example :
+    MahjongDomain.Suit.all = [.man, .pin, .sou] ∧
+    MahjongDomain.Suit.all.map suitOrderKey = [0, 1, 2] := by
+  decide
+
+private def testHandA : List Tile := Tile.numberedTiles .man [2, 3, 4, 4, 4] ++
+  Tile.numberedTiles .sou [7, 7]
+private def testHandB : List Tile := Tile.numberedTiles .man [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]
+private def testHandC : List Tile := Tile.numberedTiles .sou [2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
+private def testHandD : List Tile := Tile.numberedTiles .man [1, 1, 2, 2, 3, 3, 4, 4] ++
+  Tile.numberedTiles .sou [6, 6]
 private def testHand3456678 : List Tile := manzu [2, 3, 4, 5, 5, 6, 7]
 private def testHand2345678 : List Tile := manzu [1, 2, 3, 4, 5, 6, 7]
 private def testHand3334556 : List Tile := manzu [2, 2, 2, 3, 4, 4, 5]
@@ -26,21 +33,21 @@ private def testHand3335777 : List Tile := manzu [2, 2, 2, 4, 6, 6, 6]
 private def testHand2345555678 : List Tile := manzu [1, 2, 3, 4, 4, 4, 4, 5, 6, 7]
 
 private def manzuPair (rank : Rank) : WinningComponent :=
-  .pair (.numbered .Manzu rank)
+  .pair (.numbered .man rank)
 
 private def manzuShuntsu (start : Nat) (valid : start < shuntsuStartCount := by decide) : WinningComponent :=
-  .shuntsu .Manzu ⟨start, valid⟩
+  .shuntsu .man ⟨start, valid⟩
 
 private def manzuKoutsu (rank : Rank) : WinningComponent :=
-  .koutsu (.numbered .Manzu rank)
+  .koutsu (.numbered .man rank)
 
 private def manzuWaitCompletion (wait : Rank) (winningComponents : List WinningComponent) : WaitCompletion :=
-  { wait := .numbered .Manzu wait, winningComponents := CanonicalWinningComponents.ofList winningComponents }
+  { wait := .numbered .man wait, winningComponents := CanonicalWinningComponents.ofList winningComponents }
 
 /-- The first and last suited sequences and an honor triplet keep their ordered tile lists. -/
 example :
-    (WinningComponent.shuntsu .Manzu ⟨0, by decide⟩).tiles = manzu [0, 1, 2] ∧
-    (WinningComponent.shuntsu .Souzu ⟨6, by decide⟩).tiles = souzu [6, 7, 8] ∧
+    (WinningComponent.shuntsu .man ⟨0, by decide⟩).tiles = manzu [0, 1, 2] ∧
+    (WinningComponent.shuntsu .sou ⟨6, by decide⟩).tiles = souzu [6, 7, 8] ∧
     (WinningComponent.koutsu (.honor .Red)).tiles =
       [.honor .Red, .honor .Red, .honor .Red] := by
   decide

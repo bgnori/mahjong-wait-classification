@@ -66,9 +66,9 @@ theorem exists_removeTiles_eq_some_iff_perm (available wanted remaining : List T
 
 example :
     removeTiles
-        [.numbered .Manzu 4, .numbered .Manzu 4, .numbered .Pinzu 0]
-        [.numbered .Manzu 4] =
-      some [.numbered .Manzu 4, .numbered .Pinzu 0] := by
+        [.numbered .man 4, .numbered .man 4, .numbered .pin 0]
+        [.numbered .man 4] =
+      some [.numbered .man 4, .numbered .pin 0] := by
   native_decide
 
 /--
@@ -163,7 +163,7 @@ def decomposeMentsu : Nat → List Tile → List (List MentsuCandidate)
         | none => [])
 
     example : decomposeMentsu 0 [] = [[]] := rfl
-    example : decomposeMentsu 0 [.numbered .Manzu 0] = [] := rfl
+    example : decomposeMentsu 0 [.numbered .man 0] = [] := rfl
 
 /-- 面子分割の、除去順に依存しない公開仕様。 -/
 structure MentsuPartitionSpec (fuel : Nat) (tiles : List Tile)
@@ -705,9 +705,9 @@ def mentsuReductions (tiles : List Tile) : List (List Tile) :=
     removeTiles tiles (Mahjong.DomainAdapter.mentsuTiles mentsu)
 
 def manzu (ranks : List Rank) : List Tile :=
-  Tile.numberedTiles .Manzu ranks
+  Tile.numberedTiles .man ranks
 
 def souzu (ranks : List Rank) : List Tile :=
-  Tile.numberedTiles .Souzu ranks
+  Tile.numberedTiles .sou ranks
 
 end WaitCompletionFinder

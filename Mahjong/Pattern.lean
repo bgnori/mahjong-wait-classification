@@ -93,8 +93,8 @@ namespace MahjongDomain.MentsuCandidate
 
 /-- すべての完成面子候補を含む実行可能な列挙。 -/
 def candidates : List MentsuCandidate :=
-  (_root_.Suit.all.flatMap fun suit =>
-    List.ofFn fun start : ShuntsuStart => MentsuCandidate.shuntsu ⟨Mahjong.DomainAdapter.toDomainSuit suit, start⟩) ++
+  (MahjongDomain.Suit.all.flatMap fun suit =>
+    List.ofFn fun start : ShuntsuStart => MentsuCandidate.shuntsu ⟨suit, start⟩) ++
   _root_.Tile.all.map (fun tile => MentsuCandidate.koutsu (Mahjong.DomainAdapter.toDomainTile tile))
 
 /--
@@ -113,10 +113,10 @@ theorem mem_candidates (mentsu : MentsuCandidate) :
       rcases shuntsuPattern with ⟨suit, start⟩
       simp only [candidates, List.mem_append, List.mem_flatMap]
       left
-      refine ⟨Mahjong.DomainAdapter.ofDomainSuit suit, ?_, ?_⟩
-      · cases suit <;> simp [Mahjong.DomainAdapter.ofDomainSuit, _root_.Suit.all]
+      refine ⟨suit, ?_, ?_⟩
+      · cases suit <;> simp [MahjongDomain.Suit.all]
       · apply List.mem_ofFn.mpr
-        exact ⟨start, by simp [Mahjong.DomainAdapter.toDomainSuit_ofDomainSuit]⟩
+        exact ⟨start, rfl⟩
   | koutsu tile =>
       simp only [candidates, List.mem_append, List.mem_map]
       right
@@ -168,8 +168,8 @@ def pair (tile : Tile) : WinningComponent :=
   .inl ⟨Mahjong.DomainAdapter.toDomainTile tile⟩
 
 /-- 指定した順子を和了構成部品として作る。 -/
-def shuntsu (suit : Suit) (start : ShuntsuStart) : WinningComponent :=
-  .inr (.shuntsu ⟨Mahjong.DomainAdapter.toDomainSuit suit, start⟩)
+def shuntsu (suit : MahjongDomain.Suit) (start : ShuntsuStart) : WinningComponent :=
+  .inr (.shuntsu ⟨suit, start⟩)
 
 /-- 指定した牌種の刻子を和了構成部品として作る。 -/
 def koutsu (tile : Tile) : WinningComponent :=
@@ -180,8 +180,8 @@ def tiles : WinningComponent → List Tile
   | .inl pair => Mahjong.DomainAdapter.pairTiles pair
   | .inr mentsu => Mahjong.DomainAdapter.mentsuTiles mentsu
 
-example : (WinningComponent.pair (.numbered .Manzu 4)).tiles.map (Tile.format .mpsz) = ["5m", "5m"] := rfl
-example : (WinningComponent.shuntsu .Pinzu ⟨3, by decide⟩).tiles.map (Tile.format .mpsz) = ["4p", "5p", "6p"] := rfl
+example : (WinningComponent.pair (.numbered .man 4)).tiles.map (Tile.format .mpsz) = ["5m", "5m"] := rfl
+example : (WinningComponent.shuntsu .pin ⟨3, by decide⟩).tiles.map (Tile.format .mpsz) = ["4p", "5p", "6p"] := rfl
 example : (WinningComponent.koutsu (.honor .Red)).tiles.map (Tile.format .mpsz) = ["7z", "7z", "7z"] := rfl
 
 end WinningComponent
