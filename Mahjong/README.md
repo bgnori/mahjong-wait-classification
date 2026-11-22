@@ -10,7 +10,7 @@ This directory contains the Mahjong formalization used as the main Lean study ex
 
 2. `Pattern.lean`
    - Shared tile-pattern machinery.
-   - Toitsu, shuntsu, mentsu candidates, and winning components.
+   - Shared pairs, shuntsu, mentsu candidates, and winning components.
 
 3. `Hand.lean`
    - Hand sizes used in the study project.

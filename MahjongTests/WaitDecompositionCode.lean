@@ -148,6 +148,15 @@ private def testHandT026 : List Tile := manzu [1, 1, 1, 1, 2, 3, 3]
 private def testHand1188 : List Tile := manzu [0, 0, 7, 7]
 private def testHand1199 : List Tile := manzu [0, 0, 8, 8]
 
+/-- Equal classification codes for different waits retain their multiplicity and order. -/
+example :
+    waitDecompositionCodeEntries (findWaitCompletions testHand2345678) =
+      [{ wait := .numbered .Manzu 1, code := 338 },
+       { wait := .numbered .Manzu 4, code := 338 },
+       { wait := .numbered .Manzu 7, code := 338 }] ∧
+    waitDecompositionCodes (findWaitCompletions testHand2345678) = [338, 338, 338] := by
+  native_decide
+
 private def suppressionHand : List Tile :=
   manzu [0, 0, 0, 0, 1, 1, 1, 1, 2, 3, 3, 3, 3]
 

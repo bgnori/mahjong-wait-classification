@@ -1,11 +1,13 @@
-import Mahjong.Basic
+import Mahjong.DomainAdapter
+import MahjongDomain.Parts
+import Mathlib.Tactic.DeriveFintype
 
 /-!
 # 牌パターン
 
 このモジュールでは、待ち分類を構成する小さな部品を定義する。
-`Toitsu`、`Shuntsu`、`MentsuCandidate` は、それぞれ必要な牌種列を `tiles` で返す。
-和了構成部品 `WinningComponent` は、雀頭 `Toitsu` と面子候補 `MentsuCandidate` の直和として表す。
+共有 `Pair` と分類側の `Shuntsu`、`MentsuCandidate` を牌種列へ展開する。
+和了構成部品 `WinningComponent` は、雀頭と面子候補の直和として表す。
 -/
 
 /-!
@@ -76,34 +78,36 @@ end ShuntsuStart
 
 ここからは、麻雀上の部品をLeanのデータ構造として定義する。
 
-- `Toitsu`: 同じ牌種2枚からなる対子。
+- `MahjongDomain.Pair`: 同じ牌種2枚からなる対子。
 - `Shuntsu`: 同じスートで連続する3枚からなる順子。
 - `MentsuCandidate`: 通常形で完成面子として扱う候補。順子または刻子。
 
 これらはそれぞれ `tiles` で必要な牌種列を返す。
 -/
 
-/-- 対子。同じ牌種2枚からなる。 -/
-inductive Toitsu
-| toitsu  (t: Tile)
-deriving BEq, ReflBEq, LawfulBEq, DecidableEq, Repr, Fintype
+deriving instance BEq, ReflBEq, LawfulBEq, Repr for MahjongDomain.Suit
+deriving instance BEq, ReflBEq, LawfulBEq, Repr for MahjongDomain.Tile
+deriving instance BEq, ReflBEq, LawfulBEq, Repr, Fintype for MahjongDomain.Pair
 
-namespace Toitsu
+namespace ClassificationPair
 
 /-!
 ## 対子と牌種列
 
-`Toitsu.tiles` は、同じ牌種を2回並べた牌種列を返す。
+`tiles` は、共有対子を分類側の牌種で順序付き列に展開する。
 -/
 
 /-- 対子を構成する2枚の牌種列。 -/
-def tiles : Toitsu → List Tile
-  | .toitsu tile => [tile, tile]
+def tiles (pair : MahjongDomain.Pair) : List Tile :=
+  let tile := Mahjong.DomainAdapter.ofDomainTile pair.tile
+  [tile, tile]
 
-example : (Toitsu.toitsu (.numbered .Manzu 4)).tiles.map (Tile.format .mpsz) = ["5m", "5m"] := rfl
-example : (Toitsu.toitsu (.honor .White)).tiles.map (Tile.format .mpsz) = ["5z", "5z"] := rfl
+theorem tiles_toDomain (pair : MahjongDomain.Pair) :
+    Multiset.ofList ((tiles pair).map Mahjong.DomainAdapter.toDomainTile) = pair.tiles := by
+  simp [tiles, Mahjong.DomainAdapter.toDomainTile_ofDomainTile, MahjongDomain.Pair.tiles,
+    Multiset.replicate]
 
-end Toitsu
+end ClassificationPair
 
 /-!
 ## 順子
@@ -234,20 +238,20 @@ end MentsuCandidate
 ## 雀頭と完成面子を同じ和了構成部品として扱う
 
 通常形の和了分割では、雀頭と完成面子をどちらも「完成した部品」として並べて扱う。
-`WinningComponent` は、雀頭 `Toitsu` または完成面子候補 `MentsuCandidate` のどちらかを持つ型である。
+`WinningComponent` は、共有雀頭または完成面子候補を持つ型である。
 
 `pair`、`shuntsu`、`koutsu` は、麻雀上の呼び名から `WinningComponent` を作る入口である。
 `WinningComponent.tiles` は、どちらの部品であっても構成する牌種列を返す。
 -/
 
 /-- 通常形の和了分割に現れる和了構成部品。雀頭または完成面子。 -/
-abbrev WinningComponent := Toitsu ⊕ MentsuCandidate
+abbrev WinningComponent := MahjongDomain.Pair ⊕ MentsuCandidate
 
 namespace WinningComponent
 
 /-- 指定した牌種の雀頭を和了構成部品として作る。 -/
 def pair (tile : Tile) : WinningComponent :=
-  .inl (.toitsu tile)
+  .inl ⟨Mahjong.DomainAdapter.toDomainTile tile⟩
 
 /-- 指定した順子を和了構成部品として作る。 -/
 def shuntsu (suit : Suit) (start : ShuntsuStart) : WinningComponent :=
@@ -259,7 +263,7 @@ def koutsu (tile : Tile) : WinningComponent :=
 
 /-- 和了構成部品を構成する牌種列。 -/
 def tiles : WinningComponent → List Tile
-  | .inl pair => pair.tiles
+  | .inl pair => ClassificationPair.tiles pair
   | .inr mentsu => mentsu.tiles
 
 example : (WinningComponent.pair (.numbered .Manzu 4)).tiles.map (Tile.format .mpsz) = ["5m", "5m"] := rfl

@@ -101,7 +101,7 @@
 
 ## 麻雀の小部品とデータ構造を読む
 
-次のまとまりは、`Pattern.lean` の `Toitsu`、`Shuntsu`、`MentsuCandidate` である。
+次のまとまりは、共有 `MahjongDomain.Pair` と、`Pattern.lean` の `Shuntsu`、`MentsuCandidate` である。
 
 読む前に知る語彙:
 
@@ -114,11 +114,11 @@
 
 ここでは、麻雀上の概念とLean上のデータ構造の対応を先に押さえる。
 
-- `Toitsu`: 同じ牌種2枚からなる対子。
+- `MahjongDomain.Pair`: 同じ牌種2枚からなる対子。
 - `Shuntsu`: 同じスートで連続する3枚からなる順子。
 - `MentsuCandidate`: 通常形で完成面子として扱う候補。順子または刻子。
 
-それぞれの `tiles` は、その部品を構成する牌種列を返す。
+`ClassificationPair.tiles` と分類側の面子の `tiles` は、その部品を構成する牌種列を返す。
 `Tile.format .mpsz` を使った `example` により、対子、順子、刻子が実際の牌姿としてどう見えるかを確認する。
 
 ## 完成面子候補の列挙を読む
@@ -182,7 +182,7 @@
 - `example`
 
 通常形の和了分割では、雀頭と完成面子をどちらも完成した部品として並べて扱う。
-`WinningComponent` は、雀頭 `Toitsu` または完成面子候補 `MentsuCandidate` のどちらかを持つ型である。
+`WinningComponent` は、共有雀頭 `MahjongDomain.Pair` または完成面子候補 `MentsuCandidate` のどちらかを持つ型である。
 
 - `WinningComponent.pair`: 雀頭を和了構成部品として作る。
 - `WinningComponent.shuntsu`: 順子を和了構成部品として作る。

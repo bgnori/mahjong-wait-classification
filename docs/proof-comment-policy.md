@@ -91,20 +91,20 @@
 /-!
 ## 和了構成部品で使う小さな牌パターン
 
-ここからは、麻雀上の部品をLeanのデータ構造として定義する。
+ここからは、麻雀上の部品と分類側の牌種列への展開を説明する。
 
-- `Toitsu`: 同じ牌種2枚からなる対子。
+- `MahjongDomain.Pair`: 同じ牌種2枚からなる対子。
 - `Shuntsu`: 同じスートで連続する3枚からなる順子。
 - `MentsuCandidate`: 通常形で完成面子として扱う候補。順子または刻子。
 
-これらはそれぞれ `tiles` で必要な牌種列を返す。
+これらの分類側の展開は必要な牌種列を返す。
 -/
 ```
 
 対子、順子、刻子のように具体例が有効な定義では、`Tile.format .mpsz` を使った `example` を近くに置く。
 
 ```lean
-example : (Toitsu.toitsu (.numbered .Manzu 4)).tiles.map (Tile.format .mpsz) = ["5m", "5m"] := rfl
+example : (WinningComponent.pair (.numbered .Manzu 4)).tiles.map (Tile.format .mpsz) = ["5m", "5m"] := rfl
 example : (Shuntsu.shuntsu .Souzu ⟨0, by decide⟩).tiles.map (Tile.format .mpsz) = ["1s", "2s", "3s"] := rfl
 example : (MentsuCandidate.koutsu (.numbered .Pinzu 6)).tiles.map (Tile.format .mpsz) = ["7p", "7p", "7p"] := rfl
 ```
@@ -166,7 +166,7 @@ example : (MentsuCandidate.koutsu (.numbered .Pinzu 6)).tiles.map (Tile.format .
 ## 雀頭と完成面子を同じ和了構成部品として扱う
 
 通常形の和了分割では、雀頭と完成面子をどちらも「完成した部品」として並べて扱う。
-`WinningComponent` は、雀頭 `Toitsu` または完成面子候補 `MentsuCandidate` のどちらかを持つ型である。
+`WinningComponent` は、共有雀頭 `MahjongDomain.Pair` または完成面子候補 `MentsuCandidate` のどちらかを持つ型である。
 
 `pair`、`shuntsu`、`koutsu` は、麻雀上の呼び名から `WinningComponent` を作る入口である。
 `WinningComponent.tiles` は、どちらの部品であっても構成する牌種列を返す。

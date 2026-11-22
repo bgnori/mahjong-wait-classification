@@ -254,7 +254,7 @@ inductive型のconstructorは、その型の値や証拠を作る方法である
 ### 直和 `⊕`
 
 `A ⊕ B` は、A型の値またはB型の値のどちらかを持つ型である。
-`WinningComponent := Toitsu ⊕ MentsuCandidate` は、和了構成部品が雀頭または完成面子候補のどちらかであることを表す。
+`WinningComponent := MahjongDomain.Pair ⊕ MentsuCandidate` は、和了構成部品が雀頭または完成面子候補のどちらかであることを表す。
 
 ### `.inl` と `.inr`
 

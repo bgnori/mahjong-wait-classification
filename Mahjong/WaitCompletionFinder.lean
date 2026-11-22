@@ -113,10 +113,12 @@ example : WinningComponent.pair (.honor .Red) ∈ pairComponentCandidates := by
 
 読むためのLean語彙: `rcases`, `simp`, `∈`。
 -/
-theorem pair_mem_pairComponentCandidates (pair : Toitsu) :
+theorem pair_mem_pairComponentCandidates (pair : MahjongDomain.Pair) :
     (Sum.inl pair : WinningComponent) ∈ pairComponentCandidates := by
   rcases pair with ⟨tile⟩
-  simp [pairComponentCandidates, Tile.mem_all tile, WinningComponent.pair]
+  apply List.mem_map.mpr
+  refine ⟨Mahjong.DomainAdapter.ofDomainTile tile, Tile.mem_all _, ?_⟩
+  simp [WinningComponent.pair, Mahjong.DomainAdapter.toDomainTile_ofDomainTile]
 
 /--
 `pairComponentCandidates` に含まれる和了構成部品は、必ず何らかの雀頭である。
@@ -129,9 +131,9 @@ theorem pair_mem_pairComponentCandidates (pair : Toitsu) :
 -/
 theorem pair_of_mem_pairComponentCandidates {component : WinningComponent}
     (member : component ∈ pairComponentCandidates) :
-    ∃ pair : Toitsu, component = .inl pair := by
+    ∃ pair : MahjongDomain.Pair, component = .inl pair := by
   obtain ⟨tile, _, rfl⟩ := List.mem_map.mp member
-  exact ⟨.toitsu tile, rfl⟩
+  exact ⟨⟨Mahjong.DomainAdapter.toDomainTile tile⟩, rfl⟩
 
 /-!
 ## 牌種列を指定個数の完成面子へ分解する
@@ -328,18 +330,18 @@ theorem WinningPartitionSpec.toDomainStandardCompletion {tiles : List Tile}
         ((Sum.inl pair : WinningComponent) ::
             candidates.map fun candidate => (Sum.inr candidate : WinningComponent)).flatMap
             WinningComponent.tiles =
-          pair.tiles ++ candidates.flatMap MentsuCandidate.tiles := by
+          ClassificationPair.tiles pair ++ candidates.flatMap MentsuCandidate.tiles := by
       simp only [List.flatMap_cons, WinningComponent.tiles]
       rw [flatMap_mentsuComponents_tiles]
     have domainPermutation :
-        ((pair.tiles ++ candidates.flatMap MentsuCandidate.tiles).map
+        ((ClassificationPair.tiles pair ++ candidates.flatMap MentsuCandidate.tiles).map
           Mahjong.DomainAdapter.toDomainTile).Perm
           (tiles.map Mahjong.DomainAdapter.toDomainTile) := by
       simpa only [localParts] using tilesPerm.map Mahjong.DomainAdapter.toDomainTile
     have countsPermuted := domainPermutation.count tile
-    rw [Mahjong.DomainAdapter.toDomainPair_count,
+    rw [Mahjong.DomainAdapter.pair_count,
       Mahjong.DomainAdapter.toDomainMentsuCandidates_count,
-      ← Mahjong.DomainAdapter.toDomainTileList_count pair.tiles tile,
+      ← Mahjong.DomainAdapter.toDomainTileList_count (ClassificationPair.tiles pair) tile,
       ← Mahjong.DomainAdapter.toDomainTileList_count
         (candidates.flatMap MentsuCandidate.tiles) tile]
     rw [← List.count_append]

@@ -47,7 +47,7 @@ deriving BEq, DecidableEq, Fintype, Repr
 
 /-- 雀頭1個と `n` 個の面子からなる `2 + 3n` 枚の通常和了形。 -/
 structure WinningShape (n : Nat) where
-  pair : Toitsu
+  pair : MahjongDomain.Pair
   mentsu : Fin n → MentsuCandidate
 deriving BEq, DecidableEq, Fintype
 
@@ -148,9 +148,10 @@ private theorem wait_mem_component_of_componentKind_isSome
   · rcases pair with ⟨tile⟩
     simp only [componentKindAfterRemovingWait] at valid
     split at valid
-    · have tileEq : tile = wait := by simpa using ‹(tile == wait) = true›
-      subst tile
-      simp [WinningComponent.tiles, Toitsu.tiles]
+    · have tileEq : Mahjong.DomainAdapter.ofDomainTile tile = wait := by
+        simpa using ‹(Mahjong.DomainAdapter.ofDomainTile tile == wait) = true›
+      subst wait
+      simp [WinningComponent.tiles, ClassificationPair.tiles]
     · simp at valid
   · rcases mentsu with shuntsuPattern | tile
     · rcases shuntsuPattern with ⟨suit, start⟩
@@ -182,8 +183,8 @@ private theorem componentKind_isSome_of_wait_mem
     (componentKindAfterRemovingWait wait component).isSome = true := by
   rcases component with pair | mentsu
   · rcases pair with ⟨tile⟩
-    simp [WinningComponent.tiles, Toitsu.tiles] at member
-    subst tile
+    simp [WinningComponent.tiles, ClassificationPair.tiles] at member
+    subst wait
     simp [componentKindAfterRemovingWait]
   · rcases mentsu with shuntsuPattern | tile
     · rcases shuntsuPattern with ⟨suit, start⟩
@@ -256,12 +257,16 @@ private theorem mem_mentsuFunctions (mentsu : Fin n → MentsuCandidate) :
 /-- 雀頭と再帰生成した面子列から作る全完成形。 -/
 def winningShapes (n : Nat) : List (WinningShape n) :=
   Tile.all.flatMap fun tile =>
-    (mentsuFunctions n).map fun mentsu => { pair := .toitsu tile, mentsu }
+    (mentsuFunctions n).map fun mentsu =>
+      { pair := ⟨Mahjong.DomainAdapter.toDomainTile tile⟩, mentsu }
 
 private theorem mem_winningShapes (shape : WinningShape n) :
     shape ∈ winningShapes n := by
   rcases shape with ⟨⟨tile⟩, mentsu⟩
-  simp [winningShapes, Tile.mem_all tile, mem_mentsuFunctions mentsu]
+  simp only [winningShapes, List.mem_flatMap, List.mem_map]
+  refine ⟨Mahjong.DomainAdapter.ofDomainTile tile, Tile.mem_all _, mentsu,
+    mem_mentsuFunctions mentsu, ?_⟩
+  simp [Mahjong.DomainAdapter.toDomainTile_ofDomainTile]
 
 /-- 雀頭または `n` 個の面子から選ぶ全部品位置。 -/
 def componentIndices (n : Nat) : List (ComponentIndex n) :=
@@ -350,7 +355,7 @@ theorem mem_directSeeds_iff {seed : Seed n} :
 example :
     let seed : Seed 0 :=
       { shape :=
-          { pair := .toitsu (.honor .Red)
+          { pair := ⟨Mahjong.DomainAdapter.toDomainTile (.honor .Red)⟩
             mentsu := fun index => Fin.elim0 index }
         selected := .pair
         wait := .honor .Red }
@@ -392,7 +397,7 @@ theorem mem_directWaitDerivations (derivation : WaitDerivation n) :
 example :
     let seed : Seed 0 :=
       { shape :=
-          { pair := .toitsu (.honor .Red)
+          { pair := ⟨Mahjong.DomainAdapter.toDomainTile (.honor .Red)⟩
             mentsu := fun index => Fin.elim0 index }
         selected := .pair
         wait := .honor .Red }
@@ -405,13 +410,13 @@ example :
 ## 疎な構造コード
 
 密な `Fin N` の順位ではなく、Seed を構成する直積を自然数へ符号化する。基礎要素の
-`Tile`、`Toitsu`、`MentsuCandidate`、`ComponentIndex` だけは小さな有限型として符号表を
+`Tile`、共有 `Pair`、`MentsuCandidate`、`ComponentIndex` だけは小さな有限型として符号表を
 作るが、`Seed n` や `WaitDerivation n` 全体は列挙しない。コード値には未使用の自然数があるため
 疎だが、`sparseCode_injective` により衝突しない。
 -/
 
 private def seedEquiv (n : Nat) :
-    Seed n ≃ (Toitsu × (Fin n → MentsuCandidate)) × (ComponentIndex n × Tile) where
+    Seed n ≃ (MahjongDomain.Pair × (Fin n → MentsuCandidate)) × (ComponentIndex n × Tile) where
   toFun seed := ((seed.shape.pair, seed.shape.mentsu), (seed.selected, seed.wait))
   invFun value :=
     { shape := { pair := value.1.1, mentsu := value.1.2 }
@@ -423,7 +428,7 @@ private def seedEquiv (n : Nat) :
 /-- Seed 全体の列挙を避け、各フィールドを独立に符号化する構造的な `Encodable`。 -/
 noncomputable def seedEncodable (n : Nat) : Encodable (Seed n) := by
   letI : Encodable Tile := Fintype.toEncodable Tile
-  letI : Encodable Toitsu := Fintype.toEncodable Toitsu
+  letI : Encodable MahjongDomain.Pair := Fintype.toEncodable MahjongDomain.Pair
   letI : Encodable MentsuCandidate := Fintype.toEncodable MentsuCandidate
   letI : Encodable (ComponentIndex n) := Fintype.toEncodable (ComponentIndex n)
   exact Encodable.ofEquiv _ (seedEquiv n)
@@ -518,7 +523,7 @@ theorem wait_cons_hand_perm_winningShape (derivation : WaitDerivation n) :
 example :
     let seed : Seed 0 :=
       { shape :=
-          { pair := .toitsu (.honor .Red)
+          { pair := ⟨Mahjong.DomainAdapter.toDomainTile (.honor .Red)⟩
             mentsu := fun index => Fin.elim0 index }
         selected := .pair
         wait := .honor .Red }
@@ -537,7 +542,7 @@ private theorem winningShape_tiles_length (shape : WinningShape n) :
   simp only [WinningShape.tiles, WinningShape.components, List.flatMap_cons,
     List.length_append]
   rw [restLength]
-  simp [WinningComponent.tiles, Toitsu.tiles, Nat.add_comm]
+  simp [WinningComponent.tiles, ClassificationPair.tiles, Nat.add_comm]
 
 private theorem winningShape_partition (shape : WinningShape n) :
     WinningPartitionSpec shape.tiles shape.components := by

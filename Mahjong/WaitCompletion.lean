@@ -18,7 +18,7 @@ namespace WinningComponent
 スート、順子の開始位置からキーを決める。後続の `canonicalize` はこのキーの順に和了構成部品を並べる。
 -/
 def orderKey : WinningComponent → Nat
-  | .inl (.toitsu tile) => tile.orderKey
+  | .inl pair => (Mahjong.DomainAdapter.ofDomainTile pair.tile).orderKey
   | .inr (.shuntsu (.shuntsu suit start)) =>
       Tile.count + suit.orderKey * shuntsuStartCount + start.val
   | .inr (.koutsu tile) => Tile.count + Suit.count * shuntsuStartCount + tile.orderKey

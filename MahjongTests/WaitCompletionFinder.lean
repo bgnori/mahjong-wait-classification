@@ -30,6 +30,21 @@ private def manzuKoutsu (rank : Rank) : WinningComponent :=
 private def manzuWaitCompletion (wait : Rank) (winningComponents : List WinningComponent) : WaitCompletion :=
   { wait := .numbered .Manzu wait, winningComponents := CanonicalWinningComponents.ofList winningComponents }
 
+/-- Candidate ordering and repeated candidates are observable in the raw decomposition search. -/
+example :
+    MentsuCandidate.candidates.take 2 =
+      [.shuntsu (.shuntsu .Manzu ⟨0, by decide⟩),
+       .shuntsu (.shuntsu .Manzu ⟨1, by decide⟩)] ∧
+    (MentsuCandidate.candidates.drop 20).take 2 =
+      [.shuntsu (.shuntsu .Souzu ⟨6, by decide⟩), .koutsu (.numbered .Manzu 0)] ∧
+    MentsuCandidate.candidates.getLast? = some (.koutsu (.honor .Red)) ∧
+    decomposeMentsu 2 (manzu [0, 1, 2, 0, 1, 2]) =
+      [[.shuntsu (.shuntsu .Manzu ⟨0, by decide⟩), .shuntsu (.shuntsu .Manzu ⟨0, by decide⟩)]] ∧
+    decomposeMentsu 2 (manzu [0, 1, 2, 3, 4, 5]) =
+      [[.shuntsu (.shuntsu .Manzu ⟨0, by decide⟩), .shuntsu (.shuntsu .Manzu ⟨3, by decide⟩)],
+       [.shuntsu (.shuntsu .Manzu ⟨3, by decide⟩), .shuntsu (.shuntsu .Manzu ⟨0, by decide⟩)]] := by
+  native_decide
+
 example :
     waitingTiles testHandA = manzu [1, 4] ++ souzu [7] ∧
     waitingTiles testHandB = manzu [1, 2, 4, 5] ∧

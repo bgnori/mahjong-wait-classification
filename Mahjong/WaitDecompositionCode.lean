@@ -145,8 +145,8 @@ private def completeComponent (component : WinningComponent) : WaitComponent :=
 def componentKindAfterRemovingWait (wait : Tile) (component : WinningComponent) :
     Option WaitComponentKind :=
   match component with
-    | .inl (.toitsu tile) =>
-      if tile == wait then some .tanki else none
+    | .inl pair =>
+      if Mahjong.DomainAdapter.ofDomainTile pair.tile == wait then some .tanki else none
     | .inr (.koutsu tile) =>
       if tile == wait then some .toitsu else none
     | .inr (.shuntsu (.shuntsu suit start)) =>

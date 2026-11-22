@@ -123,7 +123,7 @@ def foldCanonicalDirectWaitDerivationsForPairTiles {n : Nat} {α : Type}
     (WaitDecompositionCode.combinationsWithRepetitionOver canonicalMentsuAlphabet n).foldl
       (init := acc) fun acc mentsuList =>
         let shape : WinningShape n :=
-          { pair := .toitsu tile, mentsu := mentsuListToFunction n mentsuList }
+          { pair := ⟨Mahjong.DomainAdapter.toDomainTile tile⟩, mentsu := mentsuListToFunction n mentsuList }
         (componentIndices n).foldl (init := acc) fun acc selected =>
           ((shape.component selected).tiles.dedup).foldl (init := acc) fun acc wait =>
             let seed : Seed n := { shape, selected, wait }
@@ -137,7 +137,7 @@ def foldCanonicalDirectWaitDerivationsForPairTilesM {n : Nat} {α : Type} {m : T
     (WaitDecompositionCode.combinationsWithRepetitionOver canonicalMentsuAlphabet n).foldlM
       (init := acc) fun acc mentsuList =>
         let shape : WinningShape n :=
-          { pair := .toitsu tile, mentsu := mentsuListToFunction n mentsuList }
+          { pair := ⟨Mahjong.DomainAdapter.toDomainTile tile⟩, mentsu := mentsuListToFunction n mentsuList }
         (componentIndices n).foldlM (init := acc) fun acc selected =>
           ((shape.component selected).tiles.dedup).foldlM (init := acc) fun acc wait =>
             let seed : Seed n := { shape, selected, wait }

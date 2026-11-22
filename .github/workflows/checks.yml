@@ -51,5 +51,11 @@ jobs:
         run: |
           lake exe cache get $(find Mahjong MahjongTests ../mahjong-domain-core/MahjongDomain \
             -name '*.lean' -exec sed -n 's/^\(public \)\?import \(Mathlib\..*\)$/\2/p' {} + | sort -u)
+      - name: Check migrated Pair declarations are absent
+        run: |
+          if grep -REn "^[[:space:]]*(@\\[[^]]+\\][[:space:]]*)*(namespace|inductive|structure|abbrev|def|theorem)[[:space:]]+(Toitsu|toDomainPair|ofDomainPair)[A-Za-z0-9_']*([[:space:]:.(]|$)" Mahjong; then
+            echo "Obsolete local Pair declaration or conversion found" >&2
+            exit 1
+          fi
       - name: Build library and regression tests
         run: lake build Mahjong MahjongTests
