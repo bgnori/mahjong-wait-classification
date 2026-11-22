@@ -547,7 +547,7 @@ inductive型のconstructorは、その型の値や証拠を作る方法である
 角括弧には定義や定理だけでなく、`simp [inductionHypothesis]` のように手元の等式も指定できる。
 この場合、`simp` は帰納法の仮定を現在の目標の書き換え規則として使う。
 
-`simp [tiles, Shuntsu.tiles] at honor_mem` のように `at` を付けると、現在の目標ではなく、手元にある仮定
+`simp [orderedTiles, Shuntsu.orderedTiles] at honor_mem` のように `at` を付けると、現在の目標ではなく、手元にある仮定
 `honor_mem` を単純化する。
 
 ### simp_all

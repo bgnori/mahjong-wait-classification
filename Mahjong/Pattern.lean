@@ -5,8 +5,8 @@ import Mathlib.Tactic.DeriveFintype
 /-!
 # 牌パターン
 
-このモジュールでは、待ち分類を構成する小さな部品を定義する。
-共有 `Pair` と分類側の `Shuntsu`、`MentsuCandidate` を牌種列へ展開する。
+このモジュールでは、待ち分類のために共有部品を順序付き牌種列へ展開する。
+共有 `Pair`、`Shuntsu`、`MentsuCandidate` を使用する。
 和了構成部品 `WinningComponent` は、雀頭と面子候補の直和として表す。
 -/
 
@@ -76,18 +76,22 @@ end ShuntsuStart
 /-!
 ## 和了構成部品で使う小さな牌パターン
 
-ここからは、麻雀上の部品をLeanのデータ構造として定義する。
+ここからは、共有部品と分類側の展開を説明する。
 
 - `MahjongDomain.Pair`: 同じ牌種2枚からなる対子。
 - `Shuntsu`: 同じスートで連続する3枚からなる順子。
 - `MentsuCandidate`: 通常形で完成面子として扱う候補。順子または刻子。
 
-これらはそれぞれ `tiles` で必要な牌種列を返す。
+分類側の `tiles`／`orderedTiles` は必要な牌種列を返す。
 -/
 
 deriving instance BEq, ReflBEq, LawfulBEq, Repr for MahjongDomain.Suit
 deriving instance BEq, ReflBEq, LawfulBEq, Repr for MahjongDomain.Tile
 deriving instance BEq, ReflBEq, LawfulBEq, Repr, Fintype for MahjongDomain.Pair
+deriving instance BEq, ReflBEq, LawfulBEq, Repr for MahjongDomain.Shuntsu
+deriving instance BEq, ReflBEq, LawfulBEq, Repr for MahjongDomain.MentsuCandidate
+
+open MahjongDomain (Shuntsu MentsuCandidate)
 
 namespace ClassificationPair
 
@@ -112,42 +116,37 @@ end ClassificationPair
 /-!
 ## 順子
 -/
-/-- 順子。数牌の同一スートで、連続する3ランクからなる。 -/
-inductive Shuntsu
-| shuntsu (suit : Suit) (start : ShuntsuStart)
-deriving BEq, ReflBEq, LawfulBEq, DecidableEq, Repr, Fintype
-
-namespace Shuntsu
+namespace MahjongDomain.Shuntsu
 
 /-!
 ## 順子と牌種列
 
-`Shuntsu.tiles` は、開始位置から先頭・中央・終端の3ランクを計算し、
+`Shuntsu.orderedTiles` は、開始位置から先頭・中央・終端の3ランクを計算し、
 同じスートの連続する3枚の牌種列を返す。
 -/
 
 /-- 順子を構成する3枚の牌種列。 -/
-def tiles : Shuntsu → List Tile
-  | .shuntsu suit start =>
-      [.numbered suit start.firstRank,
-       .numbered suit start.middleRank,
-       .numbered suit start.lastRank]
+def orderedTiles (shuntsu : Shuntsu) : List _root_.Tile :=
+  let suit := Mahjong.DomainAdapter.ofDomainSuit shuntsu.suit
+  [.numbered suit (ShuntsuStart.firstRank shuntsu.start),
+   .numbered suit (ShuntsuStart.middleRank shuntsu.start),
+   .numbered suit (ShuntsuStart.lastRank shuntsu.start)]
 
-example : (Shuntsu.shuntsu .Souzu ⟨0, by decide⟩).tiles.map (Tile.format .mpsz) = ["1s", "2s", "3s"] := rfl
-example : (Shuntsu.shuntsu .Manzu ⟨6, by decide⟩).tiles.map (Tile.format .mpsz) = ["7m", "8m", "9m"] := rfl
+theorem orderedTiles_toDomain (shuntsu : Shuntsu) :
+    Multiset.ofList (shuntsu.orderedTiles.map Mahjong.DomainAdapter.toDomainTile) =
+      shuntsu.tiles := by
+  cases shuntsu with
+  | mk suit start =>
+      cases suit <;> simp [orderedTiles, Mahjong.DomainAdapter.ofDomainSuit,
+        Mahjong.DomainAdapter.toDomainTile, Mahjong.DomainAdapter.toDomainSuit, ShuntsuStart.firstRank,
+        ShuntsuStart.middleRank, ShuntsuStart.lastRank, MahjongDomain.Shuntsu.tiles]
 
-end Shuntsu
+end MahjongDomain.Shuntsu
 
 /-!
 ## メンツ
 -/
-/-- 通常形で完成面子として扱う候補。順子または刻子。 -/
-inductive MentsuCandidate
-| shuntsu (shuntsu : Shuntsu)
-| koutsu (t: Tile)
-deriving BEq, ReflBEq, LawfulBEq, DecidableEq, Repr, Fintype
-
-namespace MentsuCandidate
+namespace MahjongDomain.MentsuCandidate
 
 /-!
 ## 完成面子候補と列挙
@@ -159,9 +158,9 @@ namespace MentsuCandidate
 
 /-- すべての完成面子候補を含む実行可能な列挙。 -/
 def candidates : List MentsuCandidate :=
-  (Suit.all.flatMap fun suit =>
-    List.ofFn fun start : ShuntsuStart => MentsuCandidate.shuntsu (.shuntsu suit start)) ++
-  Tile.all.map MentsuCandidate.koutsu
+  (_root_.Suit.all.flatMap fun suit =>
+    List.ofFn fun start : ShuntsuStart => MentsuCandidate.shuntsu ⟨Mahjong.DomainAdapter.toDomainSuit suit, start⟩) ++
+  _root_.Tile.all.map (fun tile => MentsuCandidate.koutsu (Mahjong.DomainAdapter.toDomainTile tile))
 
 /--
 任意の完成面子候補は、実行用候補列 `MentsuCandidate.candidates` に含まれる。
@@ -179,26 +178,43 @@ theorem mem_candidates (mentsu : MentsuCandidate) :
       rcases shuntsuPattern with ⟨suit, start⟩
       simp only [candidates, List.mem_append, List.mem_flatMap]
       left
-      refine ⟨suit, by cases suit <;> simp [Suit.all], ?_⟩
-      exact List.mem_ofFn.mpr ⟨start, rfl⟩
+      refine ⟨Mahjong.DomainAdapter.ofDomainSuit suit, ?_, ?_⟩
+      · cases suit <;> simp [Mahjong.DomainAdapter.ofDomainSuit, _root_.Suit.all]
+      · apply List.mem_ofFn.mpr
+        exact ⟨start, by simp [Mahjong.DomainAdapter.toDomainSuit_ofDomainSuit]⟩
   | koutsu tile =>
-      simp [candidates, Tile.mem_all tile]
+      simp only [candidates, List.mem_append, List.mem_map]
+      right
+      exact ⟨Mahjong.DomainAdapter.ofDomainTile tile, _root_.Tile.mem_all _, by
+        simp [Mahjong.DomainAdapter.toDomainTile_ofDomainTile]⟩
 
 /-- 完成面子候補を構成する3枚の牌種列。 -/
-def tiles : MentsuCandidate → List Tile
-  | .shuntsu shuntsuPattern => shuntsuPattern.tiles
-  | .koutsu tile => [tile, tile, tile]
+def orderedTiles : MentsuCandidate → List _root_.Tile
+  | .shuntsu shuntsuPattern => shuntsuPattern.orderedTiles
+  | .koutsu tile =>
+      let localTile := Mahjong.DomainAdapter.ofDomainTile tile
+      [localTile, localTile, localTile]
+
+theorem orderedTiles_toDomain (candidate : MentsuCandidate) :
+    Multiset.ofList (candidate.orderedTiles.map Mahjong.DomainAdapter.toDomainTile) =
+      candidate.tiles := by
+  cases candidate with
+  | shuntsu shuntsu =>
+      exact shuntsu.orderedTiles_toDomain
+  | koutsu tile =>
+      simp [orderedTiles, Mahjong.DomainAdapter.toDomainTile_ofDomainTile,
+        MahjongDomain.MentsuCandidate.tiles, Multiset.replicate]
 
 /-- 完成面子候補を構成する牌は常に `mentsuTileCount` 枚である。 -/
 theorem tiles_length (candidate : MentsuCandidate) :
-    candidate.tiles.length = mentsuTileCount := by
+    candidate.orderedTiles.length = mentsuTileCount := by
   cases candidate with
   | shuntsu pattern => cases pattern; rfl
   | koutsu tile => rfl
 
 /-- 完成面子候補列を牌へ戻した列の長さは、面子数の `mentsuTileCount` 倍である。 -/
 theorem flatMap_tiles_length (candidates : List MentsuCandidate) :
-    (candidates.flatMap MentsuCandidate.tiles).length =
+    (candidates.flatMap MentsuCandidate.orderedTiles).length =
       candidates.length * mentsuTileCount := by
   induction candidates with
   | nil => rfl
@@ -206,9 +222,6 @@ theorem flatMap_tiles_length (candidates : List MentsuCandidate) :
       simp only [List.flatMap_cons, List.length_append, List.length_cons]
       rw [first.tiles_length, inductionHypothesis]
       simp [Nat.add_mul, Nat.add_comm]
-
-example : (MentsuCandidate.koutsu (.numbered .Pinzu 6)).tiles.map (Tile.format .mpsz) = ["7p", "7p", "7p"] := rfl
-example : (MentsuCandidate.koutsu (.honor .East)).tiles.map (Tile.format .mpsz) = ["1z", "1z", "1z"] := rfl
 
 /-- 完成面子候補が順子であることを表す述語。 -/
 def IsShuntsu : MentsuCandidate → Prop
@@ -220,19 +233,19 @@ def IsShuntsu : MentsuCandidate → Prop
 
 この定理は、順子が同じスートの連続する数牌だけからなる、という麻雀上の制約をLean上の
 `MentsuCandidate` に対して確認する。候補が刻子なら順子ではない。候補が順子なら、
-`Shuntsu.tiles` は数牌だけを返すため、字牌が含まれるという仮定と矛盾する。
+`Shuntsu.orderedTiles` は数牌だけを返すため、字牌が含まれるという仮定と矛盾する。
 
 読むためのLean語彙: `Prop`, `theorem`, `∈`, `¬`, `cases`, `simp`, `at`。
 -/
-theorem honor_not_in_shuntsu (candidate : MentsuCandidate) (honor : Honor)
-    (honor_mem : Tile.honor honor ∈ candidate.tiles) : ¬candidate.IsShuntsu := by
+theorem honor_not_in_shuntsu (candidate : MentsuCandidate) (honor : _root_.Honor)
+    (honor_mem : _root_.Tile.honor honor ∈ candidate.orderedTiles) : ¬candidate.IsShuntsu := by
   cases candidate with
   | koutsu tile => simp [IsShuntsu]
   | shuntsu shuntsuPattern =>
       cases shuntsuPattern
-      simp [tiles, Shuntsu.tiles] at honor_mem
+      simp [orderedTiles, Shuntsu.orderedTiles] at honor_mem
 
-end MentsuCandidate
+end MahjongDomain.MentsuCandidate
 
 /-!
 ## 雀頭と完成面子を同じ和了構成部品として扱う
@@ -255,19 +268,79 @@ def pair (tile : Tile) : WinningComponent :=
 
 /-- 指定した順子を和了構成部品として作る。 -/
 def shuntsu (suit : Suit) (start : ShuntsuStart) : WinningComponent :=
-  .inr (.shuntsu (.shuntsu suit start))
+  .inr (.shuntsu ⟨Mahjong.DomainAdapter.toDomainSuit suit, start⟩)
 
 /-- 指定した牌種の刻子を和了構成部品として作る。 -/
 def koutsu (tile : Tile) : WinningComponent :=
-  .inr (.koutsu tile)
+  .inr (.koutsu (Mahjong.DomainAdapter.toDomainTile tile))
 
 /-- 和了構成部品を構成する牌種列。 -/
 def tiles : WinningComponent → List Tile
   | .inl pair => ClassificationPair.tiles pair
-  | .inr mentsu => mentsu.tiles
+  | .inr mentsu => mentsu.orderedTiles
 
 example : (WinningComponent.pair (.numbered .Manzu 4)).tiles.map (Tile.format .mpsz) = ["5m", "5m"] := rfl
 example : (WinningComponent.shuntsu .Pinzu ⟨3, by decide⟩).tiles.map (Tile.format .mpsz) = ["4p", "5p", "6p"] := rfl
 example : (WinningComponent.koutsu (.honor .Red)).tiles.map (Tile.format .mpsz) = ["7z", "7z", "7z"] := rfl
 
 end WinningComponent
+
+namespace Mahjong.DomainAdapter
+
+def tileListCounts (tiles : List Tile) : MahjongDomain.TileCounts :=
+  fun tile => (tiles.map toDomainTile).count tile
+
+theorem toDomainTileList_count (tiles : List Tile) (tile : MahjongDomain.Tile) :
+    (tiles.map toDomainTile).count tile = tiles.count (ofDomainTile tile) := by
+  induction tiles with
+  | nil => rfl
+  | cons first rest inductionHypothesis =>
+      have mappedEq : toDomainTile first = tile ↔ first = ofDomainTile tile := by
+        constructor
+        · intro equality
+          calc
+            first = ofDomainTile (toDomainTile first) :=
+              (ofDomainTile_toDomainTile first).symm
+            _ = ofDomainTile tile := congrArg ofDomainTile equality
+        · intro equality
+          subst first
+          exact toDomainTile_ofDomainTile tile
+      simp [List.count_cons, mappedEq, inductionHypothesis]
+
+theorem ofList_count_eq_list_count {α : Type} [DecidableEq α] [BEq α] [LawfulBEq α]
+    (tiles : List α) (tile : α) :
+    (Multiset.ofList tiles).count tile = tiles.count tile := by
+  induction tiles with
+  | nil => rfl
+  | cons first rest inductionHypothesis =>
+      change Multiset.count tile (first ::ₘ Multiset.ofList rest) = _
+      rw [Multiset.count_cons, List.count_cons, inductionHypothesis]
+      by_cases equal : tile = first
+      · subst first
+        simp
+      · have unequal : first ≠ tile := Ne.symm equal
+        simp [equal, unequal]
+
+theorem pair_count (pair : MahjongDomain.Pair) (tile : MahjongDomain.Tile) :
+    pair.tiles.count tile = (ClassificationPair.tiles pair).count (ofDomainTile tile) := by
+  rw [← ClassificationPair.tiles_toDomain]
+  rw [ofList_count_eq_list_count, toDomainTileList_count]
+
+theorem mentsuCandidate_count (candidate : MahjongDomain.MentsuCandidate)
+    (tile : MahjongDomain.Tile) :
+    candidate.tiles.count tile = candidate.orderedTiles.count (ofDomainTile tile) := by
+  rw [← candidate.orderedTiles_toDomain]
+  rw [ofList_count_eq_list_count, toDomainTileList_count]
+
+theorem mentsuCandidates_count (candidates : List MahjongDomain.MentsuCandidate)
+    (tile : MahjongDomain.Tile) :
+    MahjongDomain.MentsuCandidateList.counts candidates tile =
+      (candidates.flatMap MahjongDomain.MentsuCandidate.orderedTiles).count (ofDomainTile tile) := by
+  induction candidates with
+  | nil => rfl
+  | cons first rest inductionHypothesis =>
+      rw [MahjongDomain.MentsuCandidateList.counts_cons]
+      simp only [List.flatMap_cons, List.count_append]
+      rw [mentsuCandidate_count, inductionHypothesis]
+
+end Mahjong.DomainAdapter

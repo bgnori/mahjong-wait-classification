@@ -15,10 +15,10 @@ Leanの構文やタクティクは [lean-vocabulary.md](lean-vocabulary.md) を�
 
 対子・順子・刻子と雀頭1つ＋指定数の面子による通常形完成は、共通核の
 `Pair`、`Shuntsu`、`MentsuCandidate`、`StandardDecomposition`、`StandardCompletion`を
-正本とする。分類側の雀頭は共有`Pair`を直接利用し、分類側の牌種への順序付き展開は
-`ClassificationPair.tiles`に残す。`Shuntsu`、`MentsuCandidate`と`WinningPartitionSpec`は
-現状Adapterで共有仕様に接続する。残る同じ概念の型もCoreから直接利用し、
-順序付き`List Tile`への展開と分類固有の列挙は分類側に残す。
+正本とする。分類側は共有`Pair`、`Shuntsu`、`MentsuCandidate`を直接利用する。
+分類側の牌種への順序付き展開（`ClassificationPair.tiles`、`Shuntsu.orderedTiles`、
+`MentsuCandidate.orderedTiles`）と分類固有の列挙は分類側に残す。
+牌種の共有型への移行は別途行い、それまでは牌種Adapterを使う。
 共有仕様との牌種多重度の一致と、分類の牌列順・候補列挙順・結果・重複数の維持を
 別々に検証する。共有仕様への接続のために分類の列挙結果を正規化・重複除去しない。
 `WinningPartitionSpec`は分類固有の分割仕様であり、単に名前を
@@ -31,7 +31,7 @@ Leanの構文やタクティクは [lean-vocabulary.md](lean-vocabulary.md) を�
 和了構成部品は、通常形の和了を雀頭1つと面子4つに分けたときの、分割済みの各部品を指す
 このプロジェクトの説明語彙である。コード上では `WinningComponent` に対応する。
 
-`WinningComponent := MahjongDomain.Pair ⊕ MentsuCandidate` なので、値は次のどれかである。
+`WinningComponent := MahjongDomain.Pair ⊕ MahjongDomain.MentsuCandidate` なので、値は次のどれかである。
 
 - 雀頭となる対子
 - 完成面子となる順子

@@ -148,11 +148,12 @@ def componentKindAfterRemovingWait (wait : Tile) (component : WinningComponent) 
     | .inl pair =>
       if Mahjong.DomainAdapter.ofDomainTile pair.tile == wait then some .tanki else none
     | .inr (.koutsu tile) =>
-      if tile == wait then some .toitsu else none
-    | .inr (.shuntsu (.shuntsu suit start)) =>
+      if Mahjong.DomainAdapter.ofDomainTile tile == wait then some .toitsu else none
+    | .inr (.shuntsu ⟨domainSuit, start⟩) =>
       match wait with
       | .honor _ => none
       | .numbered waitSuit rank =>
+          let suit := Mahjong.DomainAdapter.ofDomainSuit domainSuit
           if waitSuit != suit then none
           else if rank == ShuntsuStart.firstRank start then
             some (if ShuntsuStart.isLast start then .penchan else .ryanmen)

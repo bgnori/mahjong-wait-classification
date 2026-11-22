@@ -51,10 +51,14 @@ jobs:
         run: |
           lake exe cache get $(find Mahjong MahjongTests ../mahjong-domain-core/MahjongDomain \
             -name '*.lean' -exec sed -n 's/^\(public \)\?import \(Mathlib\..*\)$/\2/p' {} + | sort -u)
-      - name: Check migrated Pair declarations are absent
+      - name: Check migrated part declarations are absent
         run: |
-          if grep -REn "^[[:space:]]*(@\\[[^]]+\\][[:space:]]*)*(namespace|inductive|structure|abbrev|def|theorem)[[:space:]]+(Toitsu|toDomainPair|ofDomainPair)[A-Za-z0-9_']*([[:space:]:.(]|$)" Mahjong; then
-            echo "Obsolete local Pair declaration or conversion found" >&2
+          if test -f Mahjong/PartsAdapter.lean; then
+            echo "Obsolete parts adapter found" >&2
+            exit 1
+          fi
+          if grep -REn "^[[:space:]]*(@\\[[^]]+\\][[:space:]]*)*(namespace|inductive|structure|abbrev|def|theorem)[[:space:]]+(Toitsu|Shuntsu|MentsuCandidate|((to|of)Domain(Pair|MentsuCandidate|Decomposition))[A-Za-z0-9_']*)([[:space:]:(]|$)" Mahjong MahjongComputations MahjongTests; then
+            echo "Obsolete local part declaration or conversion found" >&2
             exit 1
           fi
       - name: Build library and regression tests

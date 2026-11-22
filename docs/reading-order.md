@@ -101,7 +101,8 @@
 
 ## 麻雀の小部品とデータ構造を読む
 
-次のまとまりは、共有 `MahjongDomain.Pair` と、`Pattern.lean` の `Shuntsu`、`MentsuCandidate` である。
+次のまとまりは、共有 `MahjongDomain.Pair`、`Shuntsu`、`MentsuCandidate` と、
+`Pattern.lean` の分類側の展開である。
 
 読む前に知る語彙:
 
@@ -118,7 +119,7 @@
 - `Shuntsu`: 同じスートで連続する3枚からなる順子。
 - `MentsuCandidate`: 通常形で完成面子として扱う候補。順子または刻子。
 
-`ClassificationPair.tiles` と分類側の面子の `tiles` は、その部品を構成する牌種列を返す。
+`ClassificationPair.tiles` と面子の `orderedTiles` は、その部品を構成する牌種列を返す。
 `Tile.format .mpsz` を使った `example` により、対子、順子、刻子が実際の牌姿としてどう見えるかを確認する。
 
 ## 完成面子候補の列挙を読む
@@ -163,7 +164,7 @@
 `MentsuCandidate.IsShuntsu` は、完成面子候補が順子であることを表す述語である。
 `honor_not_in_shuntsu` は、字牌を含む完成面子候補が順子ではないことを確認する。
 
-麻雀上、順子は同じスートの連続する数牌だけからなる。Lean上では、`Shuntsu.tiles` が数牌だけを返すため、
+麻雀上、順子は同じスートの連続する数牌だけからなる。Lean上では、`Shuntsu.orderedTiles` が数牌だけを返すため、
 字牌が含まれるという仮定と両立しないことを `simp` で確認している。
 
 ## 雀頭と完成面子を同じ和了構成部品として読む

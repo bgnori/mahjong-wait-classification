@@ -34,6 +34,7 @@ import Mathlib.Logic.Equiv.List
 
 namespace DirectWaitGeneration
 
+open MahjongDomain (MentsuCandidate Shuntsu)
 open WaitCompletionFinder
 open WaitDecompositionCode
 
@@ -158,24 +159,25 @@ private theorem wait_mem_component_of_componentKind_isSome
       cases wait with
       | honor honor => simp [componentKindAfterRemovingWait] at valid
       | numbered waitSuit rank =>
-          by_cases sameSuit : waitSuit = suit
+          by_cases sameSuit : waitSuit = Mahjong.DomainAdapter.ofDomainSuit suit
           · subst waitSuit
-            by_cases first : rank = start.firstRank
+            by_cases first : rank = ShuntsuStart.firstRank start
             · subst rank
-              simp [WinningComponent.tiles, MentsuCandidate.tiles, Shuntsu.tiles]
-            · by_cases middle : rank = start.middleRank
+              simp [WinningComponent.tiles, MentsuCandidate.orderedTiles, Shuntsu.orderedTiles]
+            · by_cases middle : rank = ShuntsuStart.middleRank start
               · subst rank
-                simp [WinningComponent.tiles, MentsuCandidate.tiles, Shuntsu.tiles]
-              · by_cases last : rank = start.lastRank
+                simp [WinningComponent.tiles, MentsuCandidate.orderedTiles, Shuntsu.orderedTiles]
+              · by_cases last : rank = ShuntsuStart.lastRank start
                 · subst rank
-                  simp [WinningComponent.tiles, MentsuCandidate.tiles, Shuntsu.tiles]
+                  simp [WinningComponent.tiles, MentsuCandidate.orderedTiles, Shuntsu.orderedTiles]
                 · simp [componentKindAfterRemovingWait, first, middle, last] at valid
           · simp [componentKindAfterRemovingWait, sameSuit] at valid
     · simp only [componentKindAfterRemovingWait] at valid
       split at valid
-      · have tileEq : tile = wait := by simpa using ‹(tile == wait) = true›
-        subst tile
-        simp [WinningComponent.tiles, MentsuCandidate.tiles]
+      · have tileEq : Mahjong.DomainAdapter.ofDomainTile tile = wait := by
+          simpa using ‹(Mahjong.DomainAdapter.ofDomainTile tile == wait) = true›
+        subst wait
+        simp [WinningComponent.tiles, MentsuCandidate.orderedTiles]
       · simp at valid
 
 private theorem componentKind_isSome_of_wait_mem
@@ -189,9 +191,9 @@ private theorem componentKind_isSome_of_wait_mem
   · rcases mentsu with shuntsuPattern | tile
     · rcases shuntsuPattern with ⟨suit, start⟩
       cases wait with
-      | honor honor => simp [WinningComponent.tiles, MentsuCandidate.tiles, Shuntsu.tiles] at member
+      | honor honor => simp [WinningComponent.tiles, MentsuCandidate.orderedTiles, Shuntsu.orderedTiles] at member
       | numbered waitSuit rank =>
-          simp only [WinningComponent.tiles, MentsuCandidate.tiles, Shuntsu.tiles,
+          simp only [WinningComponent.tiles, MentsuCandidate.orderedTiles, Shuntsu.orderedTiles,
             List.mem_cons] at member
           rcases member with first | middle | last | impossible
           · injection first with suitEq rankEq
@@ -202,21 +204,23 @@ private theorem componentKind_isSome_of_wait_mem
             subst waitSuit
             subst rank
             simp only [componentKindAfterRemovingWait]
-            rw [show (suit != suit) = false by simp]
+            rw [show (Mahjong.DomainAdapter.ofDomainSuit suit !=
+              Mahjong.DomainAdapter.ofDomainSuit suit) = false by simp]
             simp only [Bool.false_eq_true, ↓reduceIte]
             split <;> simp
           · injection last with suitEq rankEq
             subst waitSuit
             subst rank
             simp only [componentKindAfterRemovingWait]
-            rw [show (suit != suit) = false by simp]
+            rw [show (Mahjong.DomainAdapter.ofDomainSuit suit !=
+              Mahjong.DomainAdapter.ofDomainSuit suit) = false by simp]
             simp only [Bool.false_eq_true, ↓reduceIte]
             split
             · simp
             · split <;> simp
           · contradiction
-    · simp [WinningComponent.tiles, MentsuCandidate.tiles] at member
-      subst tile
+    · simp [WinningComponent.tiles, MentsuCandidate.orderedTiles] at member
+      subst wait
       simp [componentKindAfterRemovingWait]
 
 /-!

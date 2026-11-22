@@ -105,8 +105,8 @@
 
 ```lean
 example : (WinningComponent.pair (.numbered .Manzu 4)).tiles.map (Tile.format .mpsz) = ["5m", "5m"] := rfl
-example : (Shuntsu.shuntsu .Souzu ⟨0, by decide⟩).tiles.map (Tile.format .mpsz) = ["1s", "2s", "3s"] := rfl
-example : (MentsuCandidate.koutsu (.numbered .Pinzu 6)).tiles.map (Tile.format .mpsz) = ["7p", "7p", "7p"] := rfl
+example : (WinningComponent.shuntsu .Souzu ⟨0, by decide⟩).tiles.map (Tile.format .mpsz) = ["1s", "2s", "3s"] := rfl
+example : (WinningComponent.koutsu (.numbered .Pinzu 6)).tiles.map (Tile.format .mpsz) = ["7p", "7p", "7p"] := rfl
 ```
 
 よい粒度の例:
@@ -135,7 +135,7 @@ example : (MentsuCandidate.koutsu (.numbered .Pinzu 6)).tiles.map (Tile.format .
 
 この定理は、順子が同じスートの連続する数牌だけからなる、という麻雀上の制約をLean上の
 `MentsuCandidate` に対して確認する。候補が刻子なら順子ではない。候補が順子なら、
-`Shuntsu.tiles` は数牌だけを返すため、字牌が含まれるという仮定と矛盾する。
+`Shuntsu.orderedTiles` は数牌だけを返すため、字牌が含まれるという仮定と矛盾する。
 
 読むためのLean語彙: `Prop`, `theorem`, `∈`, `¬`, `cases`, `simp`, `at`。
 -/

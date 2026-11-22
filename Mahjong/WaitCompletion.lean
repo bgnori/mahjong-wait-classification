@@ -19,9 +19,12 @@ namespace WinningComponent
 -/
 def orderKey : WinningComponent → Nat
   | .inl pair => (Mahjong.DomainAdapter.ofDomainTile pair.tile).orderKey
-  | .inr (.shuntsu (.shuntsu suit start)) =>
-      Tile.count + suit.orderKey * shuntsuStartCount + start.val
-  | .inr (.koutsu tile) => Tile.count + Suit.count * shuntsuStartCount + tile.orderKey
+  | .inr (.shuntsu sequence) =>
+      Tile.count + (Mahjong.DomainAdapter.ofDomainSuit sequence.suit).orderKey *
+        shuntsuStartCount + sequence.start.val
+  | .inr (.koutsu tile) =>
+      Tile.count + Suit.count * shuntsuStartCount +
+        (Mahjong.DomainAdapter.ofDomainTile tile).orderKey
 
 example : orderKey (WinningComponent.pair (.numbered .Manzu 4)) = 4 := rfl
 example : orderKey (WinningComponent.shuntsu .Pinzu ⟨3, by decide⟩) = 44 := rfl

@@ -9,6 +9,7 @@ Direct derivations are encoded as fixed-width byte records before bucket aggrega
 
 namespace MahjongComputations.ExternalWaitCompletion
 
+open MahjongDomain (MentsuCandidate)
 open MahjongComputations
 
 /-- One decoded record written by the external canonical-derivation pipeline. -/

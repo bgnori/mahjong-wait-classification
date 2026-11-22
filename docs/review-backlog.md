@@ -55,7 +55,7 @@
 
 ```lean
 components.length = fuel ∧
-	(components.flatMap MentsuCandidate.tiles).Perm tiles
+	(components.flatMap MentsuCandidate.orderedTiles).Perm tiles
 ```
 
 外延仕様は `MentsuPartitionSpec` と `WinningPartitionSpec` に名前を与えた。前者は部品数と

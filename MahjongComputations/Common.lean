@@ -7,6 +7,7 @@ import Std.Data.HashMap
 
 namespace MahjongComputations
 
+open MahjongDomain (MentsuCandidate)
 open WaitDecompositionCode
 
 /-- 牌種ごとの枚数を、物理上限より1大きい基数で符号化した多重集合キー。 -/
@@ -106,7 +107,7 @@ private def canonicalMentsuAlphabet : List MentsuCandidate :=
   MentsuCandidate.candidates.mergeSort fun first second =>
     decide (WinningComponent.orderKey (.inr first) ≤ WinningComponent.orderKey (.inr second))
 
-private def defaultMentsuCandidate : MentsuCandidate := .koutsu (.honor .East)
+private def defaultMentsuCandidate : MentsuCandidate := .koutsu (.honor 0)
 
 private def mentsuListToFunction (n : Nat) (mentsuList : List MentsuCandidate) :
     Fin n → MentsuCandidate :=

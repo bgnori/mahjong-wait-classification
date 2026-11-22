@@ -1,8 +1,15 @@
 import Mahjong.WaitCompletionFinder
+import Mathlib.Util.AssertNoSorry
 
 namespace MahjongTests.WaitCompletionFinder
 
 open _root_.WaitCompletionFinder
+open MahjongDomain (MentsuCandidate)
+
+assert_no_sorry ClassificationPair.tiles_toDomain
+assert_no_sorry MahjongDomain.Shuntsu.orderedTiles_toDomain
+assert_no_sorry MahjongDomain.MentsuCandidate.orderedTiles_toDomain
+assert_no_sorry WinningPartitionSpec.toDomainStandardCompletion
 
 private def testHandA : List Tile := Tile.numberedTiles .Manzu [2, 3, 4, 4, 4] ++
   Tile.numberedTiles .Souzu [7, 7]
@@ -30,19 +37,27 @@ private def manzuKoutsu (rank : Rank) : WinningComponent :=
 private def manzuWaitCompletion (wait : Rank) (winningComponents : List WinningComponent) : WaitCompletion :=
   { wait := .numbered .Manzu wait, winningComponents := CanonicalWinningComponents.ofList winningComponents }
 
+/-- The first and last suited sequences and an honor triplet keep their ordered tile lists. -/
+example :
+    (WinningComponent.shuntsu .Manzu ⟨0, by decide⟩).tiles = manzu [0, 1, 2] ∧
+    (WinningComponent.shuntsu .Souzu ⟨6, by decide⟩).tiles = souzu [6, 7, 8] ∧
+    (WinningComponent.koutsu (.honor .Red)).tiles =
+      [.honor .Red, .honor .Red, .honor .Red] := by
+  decide
+
 /-- Candidate ordering and repeated candidates are observable in the raw decomposition search. -/
 example :
     MentsuCandidate.candidates.take 2 =
-      [.shuntsu (.shuntsu .Manzu ⟨0, by decide⟩),
-       .shuntsu (.shuntsu .Manzu ⟨1, by decide⟩)] ∧
+      [.shuntsu ⟨.man, ⟨0, by decide⟩⟩,
+       .shuntsu ⟨.man, ⟨1, by decide⟩⟩] ∧
     (MentsuCandidate.candidates.drop 20).take 2 =
-      [.shuntsu (.shuntsu .Souzu ⟨6, by decide⟩), .koutsu (.numbered .Manzu 0)] ∧
-    MentsuCandidate.candidates.getLast? = some (.koutsu (.honor .Red)) ∧
+      [.shuntsu ⟨.sou, ⟨6, by decide⟩⟩, .koutsu (.suited .man 0)] ∧
+    MentsuCandidate.candidates.getLast? = some (.koutsu (.honor 6)) ∧
     decomposeMentsu 2 (manzu [0, 1, 2, 0, 1, 2]) =
-      [[.shuntsu (.shuntsu .Manzu ⟨0, by decide⟩), .shuntsu (.shuntsu .Manzu ⟨0, by decide⟩)]] ∧
+      [[.shuntsu ⟨.man, ⟨0, by decide⟩⟩, .shuntsu ⟨.man, ⟨0, by decide⟩⟩]] ∧
     decomposeMentsu 2 (manzu [0, 1, 2, 3, 4, 5]) =
-      [[.shuntsu (.shuntsu .Manzu ⟨0, by decide⟩), .shuntsu (.shuntsu .Manzu ⟨3, by decide⟩)],
-       [.shuntsu (.shuntsu .Manzu ⟨3, by decide⟩), .shuntsu (.shuntsu .Manzu ⟨0, by decide⟩)]] := by
+      [[.shuntsu ⟨.man, ⟨0, by decide⟩⟩, .shuntsu ⟨.man, ⟨3, by decide⟩⟩],
+       [.shuntsu ⟨.man, ⟨3, by decide⟩⟩, .shuntsu ⟨.man, ⟨0, by decide⟩⟩]] := by
   native_decide
 
 example :
