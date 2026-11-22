@@ -16,9 +16,10 @@ Leanの構文やタクティクは [lean-vocabulary.md](lean-vocabulary.md) を�
 対子・順子・刻子と雀頭1つ＋指定数の面子による通常形完成は、共通核の
 `Pair`、`Shuntsu`、`MentsuCandidate`、`StandardDecomposition`、`StandardCompletion`を
 正本とする。分類側は共有`Pair`、`Shuntsu`、`MentsuCandidate`を直接利用する。
-分類側の牌種への順序付き展開（`ClassificationPair.tiles`、`Shuntsu.orderedTiles`、
-`MentsuCandidate.orderedTiles`）と分類固有の列挙は分類側に残す。
-牌種の共有型への移行は別途行い、それまでは牌種Adapterを使う。
+順序付き展開はCoreの`Pair.orderedTiles`、`Shuntsu.orderedTiles`、
+`MentsuCandidate.orderedTiles`を正本とし、順子はランク昇順とする。分類固有の
+候補列挙は分類側に残す。牌種の共有型への移行までは`DomainAdapter.pairTiles`と
+`mentsuTiles`でCoreの列を分類側の牌種へ写す。
 共有仕様との牌種多重度の一致と、分類の牌列順・候補列挙順・結果・重複数の維持を
 別々に検証する。共有仕様への接続のために分類の列挙結果を正規化・重複除去しない。
 `WinningPartitionSpec`は分類固有の分割仕様であり、単に名前を

@@ -152,7 +152,7 @@ private theorem wait_mem_component_of_componentKind_isSome
     · have tileEq : Mahjong.DomainAdapter.ofDomainTile tile = wait := by
         simpa using ‹(Mahjong.DomainAdapter.ofDomainTile tile == wait) = true›
       subst wait
-      simp [WinningComponent.tiles, ClassificationPair.tiles]
+      simp [WinningComponent.tiles, Mahjong.DomainAdapter.pairTiles, MahjongDomain.Pair.orderedTiles]
     · simp at valid
   · rcases mentsu with shuntsuPattern | tile
     · rcases shuntsuPattern with ⟨suit, start⟩
@@ -161,15 +161,18 @@ private theorem wait_mem_component_of_componentKind_isSome
       | numbered waitSuit rank =>
           by_cases sameSuit : waitSuit = Mahjong.DomainAdapter.ofDomainSuit suit
           · subst waitSuit
-            by_cases first : rank = ShuntsuStart.firstRank start
+            by_cases first : rank = MahjongDomain.ShuntsuStart.firstRank start
             · subst rank
-              simp [WinningComponent.tiles, MentsuCandidate.orderedTiles, Shuntsu.orderedTiles]
-            · by_cases middle : rank = ShuntsuStart.middleRank start
+              simp [WinningComponent.tiles, Mahjong.DomainAdapter.mentsuTiles,
+                MentsuCandidate.orderedTiles, Shuntsu.orderedTiles, Mahjong.DomainAdapter.ofDomainTile]
+            · by_cases middle : rank = MahjongDomain.ShuntsuStart.middleRank start
               · subst rank
-                simp [WinningComponent.tiles, MentsuCandidate.orderedTiles, Shuntsu.orderedTiles]
-              · by_cases last : rank = ShuntsuStart.lastRank start
+                simp [WinningComponent.tiles, Mahjong.DomainAdapter.mentsuTiles,
+                  MentsuCandidate.orderedTiles, Shuntsu.orderedTiles, Mahjong.DomainAdapter.ofDomainTile]
+              · by_cases last : rank = MahjongDomain.ShuntsuStart.lastRank start
                 · subst rank
-                  simp [WinningComponent.tiles, MentsuCandidate.orderedTiles, Shuntsu.orderedTiles]
+                  simp [WinningComponent.tiles, Mahjong.DomainAdapter.mentsuTiles,
+                    MentsuCandidate.orderedTiles, Shuntsu.orderedTiles, Mahjong.DomainAdapter.ofDomainTile]
                 · simp [componentKindAfterRemovingWait, first, middle, last] at valid
           · simp [componentKindAfterRemovingWait, sameSuit] at valid
     · simp only [componentKindAfterRemovingWait] at valid
@@ -177,7 +180,7 @@ private theorem wait_mem_component_of_componentKind_isSome
       · have tileEq : Mahjong.DomainAdapter.ofDomainTile tile = wait := by
           simpa using ‹(Mahjong.DomainAdapter.ofDomainTile tile == wait) = true›
         subst wait
-        simp [WinningComponent.tiles, MentsuCandidate.orderedTiles]
+        simp [WinningComponent.tiles, Mahjong.DomainAdapter.mentsuTiles, MentsuCandidate.orderedTiles]
       · simp at valid
 
 private theorem componentKind_isSome_of_wait_mem
@@ -185,16 +188,19 @@ private theorem componentKind_isSome_of_wait_mem
     (componentKindAfterRemovingWait wait component).isSome = true := by
   rcases component with pair | mentsu
   · rcases pair with ⟨tile⟩
-    simp [WinningComponent.tiles, ClassificationPair.tiles] at member
+    simp [WinningComponent.tiles, Mahjong.DomainAdapter.pairTiles, MahjongDomain.Pair.orderedTiles] at member
     subst wait
     simp [componentKindAfterRemovingWait]
   · rcases mentsu with shuntsuPattern | tile
     · rcases shuntsuPattern with ⟨suit, start⟩
       cases wait with
-      | honor honor => simp [WinningComponent.tiles, MentsuCandidate.orderedTiles, Shuntsu.orderedTiles] at member
+      | honor honor =>
+          simp [WinningComponent.tiles, Mahjong.DomainAdapter.mentsuTiles,
+            MentsuCandidate.orderedTiles, Shuntsu.orderedTiles, Mahjong.DomainAdapter.ofDomainTile] at member
       | numbered waitSuit rank =>
-          simp only [WinningComponent.tiles, MentsuCandidate.orderedTiles, Shuntsu.orderedTiles,
-            List.mem_cons] at member
+          simp only [WinningComponent.tiles, Mahjong.DomainAdapter.mentsuTiles,
+            MentsuCandidate.orderedTiles, Shuntsu.orderedTiles, Mahjong.DomainAdapter.ofDomainTile,
+            List.map_cons, List.map_nil, List.mem_cons] at member
           rcases member with first | middle | last | impossible
           · injection first with suitEq rankEq
             subst waitSuit
@@ -219,7 +225,7 @@ private theorem componentKind_isSome_of_wait_mem
             · simp
             · split <;> simp
           · contradiction
-    · simp [WinningComponent.tiles, MentsuCandidate.orderedTiles] at member
+    · simp [WinningComponent.tiles, Mahjong.DomainAdapter.mentsuTiles, MentsuCandidate.orderedTiles] at member
       subst wait
       simp [componentKindAfterRemovingWait]
 
@@ -542,11 +548,11 @@ private theorem winningShape_tiles_length (shape : WinningShape n) :
         (Sum.inr candidate : WinningComponent)).flatMap WinningComponent.tiles).length =
         (List.ofFn shape.mentsu).length * mentsuTileCount := by
     simpa only [List.flatMap_map, Function.comp_apply, WinningComponent.tiles] using
-      MentsuCandidate.flatMap_tiles_length (List.ofFn shape.mentsu)
+      Mahjong.DomainAdapter.flatMap_mentsuTiles_length (List.ofFn shape.mentsu)
   simp only [WinningShape.tiles, WinningShape.components, List.flatMap_cons,
     List.length_append]
   rw [restLength]
-  simp [WinningComponent.tiles, ClassificationPair.tiles, Nat.add_comm]
+  simp [WinningComponent.tiles, Mahjong.DomainAdapter.pairTiles, MahjongDomain.Pair.orderedTiles, Nat.add_comm]
 
 private theorem winningShape_partition (shape : WinningShape n) :
     WinningPartitionSpec shape.tiles shape.components := by

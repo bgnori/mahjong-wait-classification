@@ -6,9 +6,9 @@ namespace MahjongTests.WaitCompletionFinder
 open _root_.WaitCompletionFinder
 open MahjongDomain (MentsuCandidate)
 
-assert_no_sorry ClassificationPair.tiles_toDomain
-assert_no_sorry MahjongDomain.Shuntsu.orderedTiles_toDomain
-assert_no_sorry MahjongDomain.MentsuCandidate.orderedTiles_toDomain
+assert_no_sorry Mahjong.DomainAdapter.orderedTiles_count
+assert_no_sorry Mahjong.DomainAdapter.pair_count
+assert_no_sorry Mahjong.DomainAdapter.mentsuCandidates_count
 assert_no_sorry WinningPartitionSpec.toDomainStandardCompletion
 
 private def testHandA : List Tile := Tile.numberedTiles .Manzu [2, 3, 4, 4, 4] ++

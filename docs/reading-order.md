@@ -97,12 +97,12 @@
 
 ここでは、通常形の手牌枚数や、順子の開始位置を表す補助定義を読む。
 開始位置を `Fin` で表すことで、存在しない開始位置を型で除外している。
-`ShuntsuStart.firstRank`、`middleRank`、`lastRank` は順子の3枚を計算する。
+Coreの `MahjongDomain.ShuntsuStart.firstRank`、`middleRank`、`lastRank` は順子の3ランクを計算する。
 
 ## 麻雀の小部品とデータ構造を読む
 
 次のまとまりは、共有 `MahjongDomain.Pair`、`Shuntsu`、`MentsuCandidate` と、
-`Pattern.lean` の分類側の展開である。
+Coreの順序付き展開と `DomainAdapter.lean` の牌種変換である。
 
 読む前に知る語彙:
 
@@ -119,7 +119,8 @@
 - `Shuntsu`: 同じスートで連続する3枚からなる順子。
 - `MentsuCandidate`: 通常形で完成面子として扱う候補。順子または刻子。
 
-`ClassificationPair.tiles` と面子の `orderedTiles` は、その部品を構成する牌種列を返す。
+Coreの `Pair.orderedTiles` と `MentsuCandidate.orderedTiles` が部品を牌種列に展開し、
+`DomainAdapter.pairTiles` と `mentsuTiles` が分類側の牌種へ写す。
 `Tile.format .mpsz` を使った `example` により、対子、順子、刻子が実際の牌姿としてどう見えるかを確認する。
 
 ## 完成面子候補の列挙を読む

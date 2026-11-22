@@ -157,7 +157,7 @@ def decomposeMentsu : Nat → List Tile → List (List MentsuCandidate)
       if tiles.isEmpty then [[]] else []
   | fuel + 1, tiles =>
       List.flatten (MentsuCandidate.candidates.map fun mentsu =>
-        match removeTiles tiles mentsu.orderedTiles with
+        match removeTiles tiles (Mahjong.DomainAdapter.mentsuTiles mentsu) with
         | some remaining =>
             (decomposeMentsu fuel remaining).map fun winningComponents => mentsu :: winningComponents
         | none => [])
@@ -169,7 +169,7 @@ def decomposeMentsu : Nat → List Tile → List (List MentsuCandidate)
 structure MentsuPartitionSpec (fuel : Nat) (tiles : List Tile)
     (components : List MentsuCandidate) : Prop where
   components_length : components.length = fuel
-  tiles_perm : (components.flatMap MentsuCandidate.orderedTiles).Perm tiles
+  tiles_perm : (components.flatMap Mahjong.DomainAdapter.mentsuTiles).Perm tiles
 
 /-- `decomposeMentsu` の列挙所属を、面子数と牌の多重集合からなる外延仕様で読む。 -/
 theorem mem_decomposeMentsu_iff_spec (fuel : Nat) (tiles : List Tile)
@@ -203,17 +203,17 @@ theorem mem_decomposeMentsu_iff_spec (fuel : Nat) (tiles : List Tile)
         simp only [decomposeMentsu] at member
         obtain ⟨generated, generatedMember, member⟩ := List.mem_flatten.mp member
         obtain ⟨mentsu, _, rfl⟩ := List.mem_map.mp generatedMember
-        cases removeEq : removeTiles tiles mentsu.orderedTiles with
+        cases removeEq : removeTiles tiles (Mahjong.DomainAdapter.mentsuTiles mentsu) with
         | none => simp [removeEq] at member
         | some remaining =>
             rw [removeEq] at member
             obtain ⟨rest, restMember, rfl⟩ := List.mem_map.mp member
             have restSpec := (inductionHypothesis remaining rest).mp restMember
-            have removedPerm : (mentsu.orderedTiles ++ remaining).Perm tiles :=
-              (exists_removeTiles_eq_some_iff_perm tiles mentsu.orderedTiles remaining).mp
+            have removedPerm : ((Mahjong.DomainAdapter.mentsuTiles mentsu) ++ remaining).Perm tiles :=
+              (exists_removeTiles_eq_some_iff_perm tiles (Mahjong.DomainAdapter.mentsuTiles mentsu) remaining).mp
                 ⟨remaining, removeEq, .refl remaining⟩
             exact ⟨by simp [restSpec.components_length],
-              (List.Perm.append_left mentsu.orderedTiles restSpec.tiles_perm).trans removedPerm⟩
+              (List.Perm.append_left (Mahjong.DomainAdapter.mentsuTiles mentsu) restSpec.tiles_perm).trans removedPerm⟩
       · intro specification
         cases components with
         | nil =>
@@ -224,7 +224,7 @@ theorem mem_decomposeMentsu_iff_spec (fuel : Nat) (tiles : List Tile)
               simpa using specification.components_length
             obtain ⟨remaining, removeEq, remainingPerm⟩ :=
               (exists_removeTiles_eq_some_iff_perm
-                tiles mentsu.orderedTiles (rest.flatMap MentsuCandidate.orderedTiles)).mpr
+                tiles (Mahjong.DomainAdapter.mentsuTiles mentsu) (rest.flatMap Mahjong.DomainAdapter.mentsuTiles)).mpr
                 specification.tiles_perm
             have restMember : rest ∈ decomposeMentsu fuel remaining :=
               (inductionHypothesis remaining rest).mpr ⟨restLength, remainingPerm.symm⟩
@@ -242,7 +242,7 @@ example :
 
 private theorem flatMap_mentsuComponents_tiles (mentsu : List MentsuCandidate) :
     ((mentsu.map fun candidate => (Sum.inr candidate : WinningComponent)).flatMap
-      WinningComponent.tiles) = mentsu.flatMap MentsuCandidate.orderedTiles := by
+      WinningComponent.tiles) = mentsu.flatMap Mahjong.DomainAdapter.mentsuTiles := by
   induction mentsu with
   | nil => rfl
   | cons first rest inductionHypothesis =>
@@ -290,14 +290,14 @@ theorem mem_winningPartitions_iff_spec (tiles : List Tile)
             (List.Perm.append_left pair.tiles mentsuSpec.tiles_perm).trans removedPerm
         exact ⟨pair, mentsu, rfl, pairCandidate, tilesPerm⟩
   · rintro ⟨pair, mentsu, rfl, pairCandidate, permutation⟩
-    let remaining := mentsu.flatMap MentsuCandidate.orderedTiles
+    let remaining := mentsu.flatMap Mahjong.DomainAdapter.mentsuTiles
     have removedPerm : (WinningComponent.tiles pair ++ remaining).Perm tiles := by
       simpa only [List.flatMap_cons, flatMap_mentsuComponents_tiles, remaining] using permutation
     obtain ⟨output, removePair, outputPerm⟩ :=
       (exists_removeTiles_eq_some_iff_perm tiles (WinningComponent.tiles pair) remaining).mpr
         removedPerm
     have outputLength : output.length = mentsu.length * mentsuTileCount :=
-      outputPerm.length_eq.trans (MentsuCandidate.flatMap_tiles_length mentsu)
+      outputPerm.length_eq.trans (Mahjong.DomainAdapter.flatMap_mentsuTiles_length mentsu)
     have fuelEq : mentsu.length = output.length / mentsuTileCount := by
       rw [outputLength]
       simp [mentsuTileCount]
@@ -328,20 +328,20 @@ theorem WinningPartitionSpec.toDomainStandardCompletion {tiles : List Tile}
         ((Sum.inl pair : WinningComponent) ::
             candidates.map fun candidate => (Sum.inr candidate : WinningComponent)).flatMap
             WinningComponent.tiles =
-          ClassificationPair.tiles pair ++ candidates.flatMap MentsuCandidate.orderedTiles := by
+          Mahjong.DomainAdapter.pairTiles pair ++ candidates.flatMap Mahjong.DomainAdapter.mentsuTiles := by
       simp only [List.flatMap_cons, WinningComponent.tiles]
       rw [flatMap_mentsuComponents_tiles]
     have domainPermutation :
-        ((ClassificationPair.tiles pair ++ candidates.flatMap MentsuCandidate.orderedTiles).map
+        ((Mahjong.DomainAdapter.pairTiles pair ++ candidates.flatMap Mahjong.DomainAdapter.mentsuTiles).map
           Mahjong.DomainAdapter.toDomainTile).Perm
           (tiles.map Mahjong.DomainAdapter.toDomainTile) := by
       simpa only [localParts] using tilesPerm.map Mahjong.DomainAdapter.toDomainTile
     have countsPermuted := domainPermutation.count tile
     rw [Mahjong.DomainAdapter.pair_count,
       Mahjong.DomainAdapter.mentsuCandidates_count,
-      ← Mahjong.DomainAdapter.toDomainTileList_count (ClassificationPair.tiles pair) tile,
+      ← Mahjong.DomainAdapter.toDomainTileList_count (Mahjong.DomainAdapter.pairTiles pair) tile,
       ← Mahjong.DomainAdapter.toDomainTileList_count
-        (candidates.flatMap MentsuCandidate.orderedTiles) tile]
+        (candidates.flatMap Mahjong.DomainAdapter.mentsuTiles) tile]
     rw [← List.count_append]
     simpa only [List.map_append, Mahjong.DomainAdapter.tileListCounts] using countsPermuted
 
@@ -702,7 +702,7 @@ example : decide (IsTenpai ([] : List Tile)) = false := by
 /-- `tiles` から完成面子を1つ取り除いて得られる牌種リストの候補。 -/
 def mentsuReductions (tiles : List Tile) : List (List Tile) :=
   MentsuCandidate.candidates.filterMap fun mentsu =>
-    removeTiles tiles mentsu.orderedTiles
+    removeTiles tiles (Mahjong.DomainAdapter.mentsuTiles mentsu)
 
 def manzu (ranks : List Rank) : List Tile :=
   Tile.numberedTiles .Manzu ranks

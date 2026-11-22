@@ -26,7 +26,7 @@
 `standardHandMentsuCount` と `standardTenpaiHandSize` だけが決める。
 
 また、`DirectWaitGeneration.lean` に局所定義されていた面子列の牌数補題は、
-`Pattern.lean` の `MentsuCandidate.flatMap_tiles_length` と同じ内容だったため削除し、既存補題を直接使う。
+同じ内容の補題があったため削除し、現在は `DomainAdapter.flatMap_mentsuTiles_length` を直接使う。
 
 `Hand` も、1枚、4枚、7枚、10枚、13枚ごとに同じ物理牌埋め込みを持つ5コンストラクタから、
 `mentsuCount : Fin (standardHandMentsuCount + 1)` と
@@ -55,7 +55,7 @@
 
 ```lean
 components.length = fuel ∧
-	(components.flatMap MentsuCandidate.orderedTiles).Perm tiles
+	(components.flatMap Mahjong.DomainAdapter.mentsuTiles).Perm tiles
 ```
 
 外延仕様は `MentsuPartitionSpec` と `WinningPartitionSpec` に名前を与えた。前者は部品数と

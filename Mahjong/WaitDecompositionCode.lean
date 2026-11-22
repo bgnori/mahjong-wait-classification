@@ -155,11 +155,11 @@ def componentKindAfterRemovingWait (wait : Tile) (component : WinningComponent) 
       | .numbered waitSuit rank =>
           let suit := Mahjong.DomainAdapter.ofDomainSuit domainSuit
           if waitSuit != suit then none
-          else if rank == ShuntsuStart.firstRank start then
+          else if rank == MahjongDomain.ShuntsuStart.firstRank start then
             some (if ShuntsuStart.isLast start then .penchan else .ryanmen)
-          else if rank == ShuntsuStart.middleRank start then
+          else if rank == MahjongDomain.ShuntsuStart.middleRank start then
             some .kanchan
-          else if rank == ShuntsuStart.lastRank start then
+          else if rank == MahjongDomain.ShuntsuStart.lastRank start then
             some (if ShuntsuStart.isFirst start then .penchan else .ryanmen)
           else none
 
