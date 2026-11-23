@@ -1,4 +1,8 @@
-import MahjongComputations.TenTile
+module
+
+public import MahjongComputations.TenTile
+
+@[expose] public section
 
 open MahjongDomain (Tile Rank Honor TileFormat)
 
@@ -14,7 +18,7 @@ open WaitCompletionFinder
 open WaitDecompositionCode
 open MahjongComputations
 
-private def emptyLegacySummary : TenTileSummary :=
+def Internal.emptyLegacySummary : TenTileSummary :=
   { allTenTileShapes := 0
     enumeratedDerivations := 0
     tenpaiReports := 0
@@ -28,11 +32,13 @@ private def emptyLegacySummary : TenTileSummary :=
     irreducibleRelationGroups := []
     waitTileCountDistribution := [] }
 
-private structure ComputationState where
+structure Internal.ComputationState where
   summary : TenTileSummary
   waitCoreCache : WaitCoreCache
 
-private def addShapeReport (report : WaitCompletionGroup) (state : ComputationState) :
+open _root_.MahjongComputations.TenTile.Internal
+
+def Internal.addShapeReport (report : WaitCompletionGroup) (state : ComputationState) :
     ComputationState :=
   let completions := report.completions
   let waits := waitsFromCompletions completions
@@ -64,7 +70,7 @@ private def addShapeReport (report : WaitCompletionGroup) (state : ComputationSt
         summary.irreducibleRelationGroups }
   { summary, waitCoreCache }
 
-@[noinline] private def allTenTileShapeCountLegacy (tileCount : Nat) : Nat :=
+@[noinline] def Internal.allTenTileShapeCountLegacy (tileCount : Nat) : Nat :=
   countLegalTileMultisetsOfLength tileCount Tile.all
 
 /-- Ten-tile summary using the original in-memory compact-key cache. -/

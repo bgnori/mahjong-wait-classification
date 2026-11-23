@@ -1,9 +1,13 @@
-import Mahjong.DirectWaitGeneration
-import Mahjong.WaitDecompositionCode
-import MahjongComputations.Common
-import MahjongComputations.Parallel
-import MahjongComputations.ExternalWaitCompletion
-import MahjongComputations.BucketClassification
+module
+
+public import Mahjong.DirectWaitGeneration
+public import Mahjong.WaitDecompositionCode
+public import MahjongComputations.Common
+public import MahjongComputations.Parallel
+public import MahjongComputations.ExternalWaitCompletion
+public import MahjongComputations.BucketClassification
+
+@[expose] public section
 
 open MahjongDomain (Tile Rank Honor TileFormat)
 
@@ -17,6 +21,10 @@ materializing the non-tenpai shapes.
 -/
 
 namespace MahjongComputations.ThirteenTile
+
+namespace Internal
+end Internal
+open _root_.MahjongComputations.ThirteenTile.Internal
 
 open DirectWaitGeneration
 open WaitCompletionFinder
@@ -40,7 +48,7 @@ structure ThirteenTileSummary where
   pathologyGroups : List WaitPathologyGroup := []
 deriving BEq, DecidableEq, Repr
 
-private def emptySummary : ThirteenTileSummary :=
+def Internal.emptySummary : ThirteenTileSummary :=
   { allThirteenTileShapes := 0
     enumeratedDerivations := 0
     tenpaiReports := 0
@@ -54,14 +62,14 @@ private def emptySummary : ThirteenTileSummary :=
     irreducibleRelationGroups := []
     waitTileCountDistribution := [] }
 
-private def allThirteenTileShapeCount : Nat := 98521596000
+def Internal.allThirteenTileShapeCount : Nat := 98521596000
 
 /-- Summary plus whether generation reused a completed external bucket set. -/
 structure ThirteenTileRunResult where
   summary : ThirteenTileSummary
   generationReused : Bool
 
-private def generateBuckets (workers : Nat) (workDirectory : System.FilePath)
+def Internal.generateBuckets (workers : Nat) (workDirectory : System.FilePath)
     (bucketCount : Nat) : IO (List System.FilePath × Nat × Bool) := do
   if let some derivationCount ←
       ExternalWaitCompletion.readGenerationCheckpoint workDirectory 4 bucketCount then

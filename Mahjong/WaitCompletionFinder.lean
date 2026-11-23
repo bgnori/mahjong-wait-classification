@@ -1,4 +1,9 @@
-import Mahjong.WaitCompletion
+module
+
+public import Mahjong.WaitCompletion
+public meta import Mahjong.WaitCompletion
+
+@[expose] public section
 
 open MahjongDomain (Tile Rank Honor TileFormat copiesPerTile)
 

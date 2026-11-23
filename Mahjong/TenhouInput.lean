@@ -1,5 +1,9 @@
-import Mahjong.Hand
-import MahjongDomain.Tenhou
+module
+
+public import Mahjong.Hand
+public import MahjongDomain.Tenhou
+
+@[expose] public section
 
 namespace Mahjong.TenhouInput
 

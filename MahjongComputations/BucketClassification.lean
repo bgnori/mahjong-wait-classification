@@ -1,7 +1,11 @@
-import Mahjong.WaitDecompositionCode
-import MahjongComputations.Common
-import MahjongComputations.Parallel
-import MahjongComputations.ExternalWaitCompletion
+module
+
+public import Mahjong.WaitDecompositionCode
+public import MahjongComputations.Common
+public import MahjongComputations.Parallel
+public import MahjongComputations.ExternalWaitCompletion
+
+@[expose] public section
 
 open MahjongDomain (Tile Rank Honor TileFormat)
 
@@ -17,6 +21,10 @@ run rather than of an uninterrupted one.
 -/
 
 namespace MahjongComputations.BucketClassification
+
+namespace Internal
+end Internal
+open _root_.MahjongComputations.BucketClassification.Internal
 
 open WaitCompletionFinder
 open WaitDecompositionCode
@@ -44,7 +52,7 @@ def empty : BucketSummary :=
     irreducibleRelationGroups := []
     waitTileCountDistribution := [] }
 
-private def addCodeGroup
+def Internal.addCodeGroup
     (groups : List WaitDecompositionCodeGroup) (addition : WaitDecompositionCodeGroup) :
     List WaitDecompositionCodeGroup :=
   match groups with
@@ -55,7 +63,7 @@ private def addCodeGroup
       else
         group :: addCodeGroup rest addition
 
-private def addDistribution
+def Internal.addDistribution
     (counts : List (Nat × Nat)) (addition : Nat × Nat) : List (Nat × Nat) :=
   match counts with
   | [] => [addition]
@@ -112,21 +120,21 @@ def addShapeReport (cache : SharedWaitCoreCache)
           witnesses
           summary.irreducibleRelationGroups }
 
-private def formatMagic : String := "MJWC-CLASSIFICATION-6"
+def Internal.formatMagic : String := "MJWC-CLASSIFICATION-6"
 
-private def encodeNats (values : List Nat) : String :=
+def Internal.encodeNats (values : List Nat) : String :=
   String.intercalate "," (values.map toString)
 
-private def decodeNats (value : String) : Option (List Nat) :=
+def Internal.decodeNats (value : String) : Option (List Nat) :=
   if value.isEmpty then some [] else (value.splitOn ",").mapM String.toNat?
 
-private def encodeTiles (tiles : List Tile) : String :=
+def Internal.encodeTiles (tiles : List Tile) : String :=
   encodeNats (tiles.map fun tile => Tile.all.idxOf tile)
 
-private def decodeTiles (value : String) : Option (List Tile) := do
+def Internal.decodeTiles (value : String) : Option (List Tile) := do
   (← decodeNats value).mapM fun index => Tile.all[index]?
 
-private def formatProfileRepresentative
+def Internal.formatProfileRepresentative
     (representative : WaitPathologyProfileRepresentative) : String :=
   String.intercalate ";" [
     if representative.waitSuppression then "1" else "0",
@@ -135,7 +143,7 @@ private def formatProfileRepresentative
     encodeTiles representative.waits
   ]
 
-private def parseProfileRepresentative
+def Internal.parseProfileRepresentative
     (value : String) : Option WaitPathologyProfileRepresentative := do
   match value.splitOn ";" with
   | [suppression, ambiguity, tiles, waits] =>
@@ -149,15 +157,15 @@ private def parseProfileRepresentative
       }
   | _ => none
 
-private def formatProfileRepresentatives
+def Internal.formatProfileRepresentatives
     (representatives : List WaitPathologyProfileRepresentative) : String :=
   String.intercalate "|" (representatives.map formatProfileRepresentative)
 
-private def parseProfileRepresentatives
+def Internal.parseProfileRepresentatives
     (value : String) : Option (List WaitPathologyProfileRepresentative) :=
   if value.isEmpty then some [] else value.splitOn "|" |>.mapM parseProfileRepresentative
 
-private def formatGroup (group : WaitDecompositionCodeGroup) : String :=
+def Internal.formatGroup (group : WaitDecompositionCodeGroup) : String :=
   String.intercalate "\t" [
     encodeNats group.codes,
     toString group.count,
@@ -165,7 +173,7 @@ private def formatGroup (group : WaitDecompositionCodeGroup) : String :=
     encodeTiles group.representativeWaits
   ]
 
-private def parseGroup (line : String) : Option WaitDecompositionCodeGroup := do
+def Internal.parseGroup (line : String) : Option WaitDecompositionCodeGroup := do
   match line.splitOn "\t" with
   | [codes, count, tiles, waits] =>
       return {
@@ -176,7 +184,7 @@ private def parseGroup (line : String) : Option WaitDecompositionCodeGroup := do
       }
   | _ => none
 
-private def formatRelationGroup (group : WaitDecompositionRelationGroup) : String :=
+def Internal.formatRelationGroup (group : WaitDecompositionRelationGroup) : String :=
   String.intercalate "\t" [
     encodeNats group.codes,
     encodeNats group.relationKey,
@@ -190,7 +198,7 @@ private def formatRelationGroup (group : WaitDecompositionRelationGroup) : Strin
     group.relationDescription
   ]
 
-private def parseRelationGroup (line : String) : Option WaitDecompositionRelationGroup := do
+def Internal.parseRelationGroup (line : String) : Option WaitDecompositionRelationGroup := do
   match line.splitOn "\t" with
   | [codes, relationKey, count, suppression, ambiguity, both, tiles, waits,
       profileRepresentatives, description] =>
@@ -209,15 +217,15 @@ private def parseRelationGroup (line : String) : Option WaitDecompositionRelatio
       }
   | _ => none
 
-private def formatDistribution (entry : Nat × Nat) : String :=
+def Internal.formatDistribution (entry : Nat × Nat) : String :=
   s!"{entry.1},{entry.2}"
 
-private def parseDistribution (line : String) : Option (Nat × Nat) := do
+def Internal.parseDistribution (line : String) : Option (Nat × Nat) := do
   match line.splitOn "," with
   | [key, count] => return (← key.toNat?, ← count.toNat?)
   | _ => none
 
-private def formatPathologyGroup (group : WaitPathologyGroup) : String :=
+def Internal.formatPathologyGroup (group : WaitPathologyGroup) : String :=
   String.intercalate "\t" [
     encodeNats group.codes,
     if group.reducible then "1" else "0",
@@ -231,7 +239,7 @@ private def formatPathologyGroup (group : WaitPathologyGroup) : String :=
     toString group.witness.remainingCoreCount
   ]
 
-private def parsePathologyGroup (line : String) : Option WaitPathologyGroup := do
+def Internal.parsePathologyGroup (line : String) : Option WaitPathologyGroup := do
   match line.splitOn "\t" with
   | [codes, reducible, count, tiles, waits, kind, remaining, remainingWaits, before, after] =>
     guard (reducible == "0" || reducible == "1")
@@ -250,7 +258,7 @@ private def parsePathologyGroup (line : String) : Option WaitPathologyGroup := d
     }
   | _ => none
 
-private def summaryText (mentsuCount : Nat) (summary : BucketSummary) : String :=
+def Internal.summaryText (mentsuCount : Nat) (summary : BucketSummary) : String :=
   String.intercalate "\n" <|
     [formatMagic,
      s!"mentsuCount={mentsuCount}",
@@ -268,11 +276,11 @@ private def summaryText (mentsuCount : Nat) (summary : BucketSummary) : String :
     summary.pathologyGroups.map formatPathologyGroup ++
     [""]
 
-private def parseField (fieldPrefix value : String) : Option Nat := do
+def Internal.parseField (fieldPrefix value : String) : Option Nat := do
   guard (value.startsWith fieldPrefix)
   (value.drop fieldPrefix.length).toNat?
 
-private def parseSummary (mentsuCount : Nat) (text : String) : Option BucketSummary := do
+def Internal.parseSummary (mentsuCount : Nat) (text : String) : Option BucketSummary := do
   let lines := text.splitOn "\n"
   guard (lines[0]? == some formatMagic)
   let savedMentsuCount ← lines[1]?.bind (parseField "mentsuCount=")
@@ -346,7 +354,7 @@ def clearResults (paths : List System.FilePath) : IO Unit := do
         if ← path.pathExists then
           IO.FS.removeFile path
 
-private def classifyBucket (cache : SharedWaitCoreCache) (mentsuCount : Nat)
+def Internal.classifyBucket (cache : SharedWaitCoreCache) (mentsuCount : Nat)
     (path : System.FilePath) : IO (BucketSummary × Bool) := do
   if let some saved ← readResult path mentsuCount then
     IO.eprintln s!"bucket-classification: reusing {resultPath path}"

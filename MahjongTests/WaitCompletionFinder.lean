@@ -1,7 +1,14 @@
-import Mahjong.WaitCompletionFinder
-import Mahjong.Hand
-import Mahjong.TenhouInput
-import Mathlib.Util.AssertNoSorry
+module
+
+public import Mahjong.WaitCompletionFinder
+public import Mahjong.Hand
+public import Mahjong.TenhouInput
+public import Mathlib.Util.AssertNoSorry
+public meta import Mahjong.WaitCompletionFinder
+-- Preserve the existing decide proofs about Except equality.
+import all Batteries.Data.Except
+
+@[expose] public section
 
 open MahjongDomain (Tile Rank Honor TileFormat)
 

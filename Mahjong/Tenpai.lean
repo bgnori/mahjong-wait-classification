@@ -1,5 +1,9 @@
-import Mahjong.Hand
-import Mahjong.WaitCompletionFinder
+module
+
+public import Mahjong.Hand
+public import Mahjong.WaitCompletionFinder
+
+@[expose] public section
 
 /-!
 # 聴牌の証拠

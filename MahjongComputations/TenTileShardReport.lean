@@ -1,5 +1,9 @@
-import MahjongComputations.TenTileLegacy
-import MahjongComputations.ReportJson
+module
+
+public import MahjongComputations.TenTileLegacy
+public import MahjongComputations.ReportJson
+
+@[expose] public section
 
 /-!
 # Ten-tile sharded report generator
@@ -44,7 +48,7 @@ def parseArgs (args : List String) : Option (Nat × Nat × String) := do
       outputPath := some arg
   (·, ·, ·) <$> shardIndex <*> numShards <*> outputPath
 
-def run (args : List String) : IO UInt32 := do
+@[no_expose] def run (args : List String) : IO UInt32 := do
   match parseArgs args with
   | none =>
       IO.eprintln "usage: ten-tile-shard-report-gen [--shard=i] [--num-shards=k] [output.json]"

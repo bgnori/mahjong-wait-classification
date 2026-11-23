@@ -1,6 +1,12 @@
-import Mahjong.Basic
-import MahjongDomain.Parts
-import Mathlib.Tactic.DeriveFintype
+module
+
+public import Mahjong.Basic
+public import MahjongDomain.Parts
+public import Mathlib.Tactic.DeriveFintype
+-- Preserve the existing rfl formatting examples.
+import all Init.Data.Repr
+
+@[expose] public section
 
 open MahjongDomain (Tile Rank Honor TileFormat)
 

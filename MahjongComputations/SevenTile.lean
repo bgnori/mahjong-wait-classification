@@ -1,7 +1,12 @@
-import Mahjong.DirectWaitGeneration
-import Mahjong.WaitDecompositionCode
-import MahjongComputations.Common
-import MahjongComputations.Parallel
+module
+
+public import Mahjong.DirectWaitGeneration
+public import Mahjong.WaitDecompositionCode
+public import MahjongComputations.Common
+public import MahjongComputations.Parallel
+public meta import MahjongComputations.Common
+
+@[expose] public section
 
 open MahjongDomain (Tile Rank Honor TileFormat)
 
@@ -15,6 +20,10 @@ non-tenpai shapes.
 -/
 
 namespace MahjongComputations.SevenTile
+
+namespace Internal
+end Internal
+open _root_.MahjongComputations.SevenTile.Internal
 
 open DirectWaitGeneration
 open WaitCompletionFinder
@@ -37,7 +46,7 @@ structure SevenTileSummary where
   pathologyGroups : List WaitPathologyGroup := []
 deriving BEq, DecidableEq, Repr
 
-private def emptySummary : SevenTileSummary :=
+def Internal.emptySummary : SevenTileSummary :=
   { allSevenTileShapes := 0
     enumeratedDerivations := 0
     tenpaiReports := 0
@@ -51,14 +60,14 @@ private def emptySummary : SevenTileSummary :=
     irreducibleRelationGroups := []
     waitTileCountDistribution := [] }
 
-private def allSevenTileShapeCount (_ : Unit) : Nat :=
+def Internal.allSevenTileShapeCount (_ : Unit) : Nat :=
   countLegalTileMultisetsOfLength 7 Tile.all
 
-private structure ComputationState where
+structure Internal.ComputationState where
   summary : SevenTileSummary
   waitCoreCache : WaitCoreCache
 
-private def addShapeReport (report : WaitCompletionGroup) (state : ComputationState) :
+def Internal.addShapeReport (report : WaitCompletionGroup) (state : ComputationState) :
     ComputationState :=
   let completions := report.completions
   let waits := waitsFromCompletions completions
@@ -90,7 +99,7 @@ private def addShapeReport (report : WaitCompletionGroup) (state : ComputationSt
         summary.irreducibleRelationGroups }
   { summary, waitCoreCache }
 
-private def addShapeReportShared (cache : SharedWaitCoreCache)
+def Internal.addShapeReportShared (cache : SharedWaitCoreCache)
     (summary : SevenTileSummary) (report : WaitCompletionGroup) : BaseIO SevenTileSummary := do
   let completions := report.completions
   let waits := waitsFromCompletions completions
@@ -118,7 +127,7 @@ private def addShapeReportShared (cache : SharedWaitCoreCache)
         witnesses
         summary.irreducibleRelationGroups }
 
-private def addCodeGroup
+def Internal.addCodeGroup
     (groups : List WaitDecompositionCodeGroup) (addition : WaitDecompositionCodeGroup) :
     List WaitDecompositionCodeGroup :=
   match groups with
@@ -129,7 +138,7 @@ private def addCodeGroup
       else
         group :: addCodeGroup rest addition
 
-private def addDistribution
+def Internal.addDistribution
     (counts : List (Nat × Nat)) (addition : Nat × Nat) : List (Nat × Nat) :=
   match counts with
   | [] => [addition]
@@ -139,7 +148,7 @@ private def addDistribution
       else
         count :: addDistribution rest addition
 
-private def mergeSummary (first second : SevenTileSummary) : SevenTileSummary :=
+def Internal.mergeSummary (first second : SevenTileSummary) : SevenTileSummary :=
   { first with
     tenpaiReports := first.tenpaiReports + second.tenpaiReports
     pathologyGroups := mergeWaitPathologyGroups first.pathologyGroups second.pathologyGroups

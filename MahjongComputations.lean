@@ -1,5 +1,9 @@
-import MahjongComputations.FourTile
-import MahjongComputations.SevenTile
+module
+
+public import MahjongComputations.FourTile
+public import MahjongComputations.SevenTile
+
+@[expose] public section
 
 /-!
 # Mahjong heavy computations

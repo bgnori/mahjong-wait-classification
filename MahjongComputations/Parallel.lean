@@ -1,5 +1,9 @@
-import MahjongComputations.Common
-import Std.Sync.Mutex
+module
+
+public import MahjongComputations.Common
+public import Std.Sync.Mutex
+
+@[expose] public section
 
 open MahjongDomain (Tile Rank Honor TileFormat)
 
@@ -130,7 +134,7 @@ private def newWaitCoreCacheStripe : BaseIO (Std.Mutex SharedWaitCoreCacheState)
   Std.Mutex.new { values := ∅, hits := 0, misses := 0 }
 
 /-- Create an empty wait-core cache for concurrent workers. -/
-def SharedWaitCoreCache.new : BaseIO SharedWaitCoreCache := do
+@[no_expose] def SharedWaitCoreCache.new : BaseIO SharedWaitCoreCache := do
   let firstStripe ← newWaitCoreCacheStripe
   let remainingStripes ← (List.range (waitCoreCacheStripeCount - 1)).mapM fun _ =>
     newWaitCoreCacheStripe
@@ -149,8 +153,8 @@ private def computeWaitCoreKeys (tiles : List Tile) : CachedWaitCoreKeys :=
 /--
 Look up wait-core keys, ensuring that concurrent misses for the same hand share one computation.
 -/
-def SharedWaitCoreCache.lookup (cache : SharedWaitCoreCache)
-    (tiles : List Tile) : BaseIO CachedWaitCoreKeys := do
+@[no_expose] def SharedWaitCoreCache.lookup (cache : SharedWaitCoreCache)
+    (tiles : List Tile) : BaseIO (Option (List Nat)) := do
   let key := tileMultisetKey tiles
   let stripe := cache.stripeFor key
   let lookup : SharedWaitCoreCacheLookup ← stripe.atomically do
@@ -180,7 +184,7 @@ def SharedWaitCoreCache.lookup (cache : SharedWaitCoreCache)
       return cores
 
 /-- Read a consistent snapshot of cache statistics. -/
-def SharedWaitCoreCache.stats (cache : SharedWaitCoreCache) : BaseIO SharedWaitCoreCacheStats := do
+@[no_expose] def SharedWaitCoreCache.stats (cache : SharedWaitCoreCache) : BaseIO SharedWaitCoreCacheStats := do
   let stripeStats ← (cache.firstStripe :: cache.remainingStripes).mapM fun stripe =>
     stripe.atomically do
       let state : SharedWaitCoreCacheState ← get

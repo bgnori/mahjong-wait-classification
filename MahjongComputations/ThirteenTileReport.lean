@@ -1,6 +1,10 @@
-import MahjongComputations.ThirteenTile
-import MahjongComputations.Parallel
-import MahjongComputations.ReportJson
+module
+
+public import MahjongComputations.ThirteenTile
+public import MahjongComputations.Parallel
+public import MahjongComputations.ReportJson
+
+@[expose] public section
 
 /-!
 # Thirteen-tile report generator
@@ -77,7 +81,7 @@ private def reportJson (result : ThirteenTileRunResult) (elapsedMs : Nat) : Json
     (commonDataFields summary.irreducibleGroups summary.irreducibleRelationGroups
       summary.waitTileCountDistribution ++ pathologyDataFields summary.pathologyGroups)
 
-def run (args : List String) : IO UInt32 := do
+@[no_expose] def run (args : List String) : IO UInt32 := do
   let options ← parseArgs args
   let path : System.FilePath := options.outputPath
   if let some parent := path.parent then

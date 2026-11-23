@@ -1,7 +1,12 @@
-import Mahjong.WaitDecompositionCode
-import Mathlib.Data.Fintype.Pi
-import Mathlib.Logic.Encodable.Pi
-import Mathlib.Logic.Equiv.List
+module
+
+public import Mahjong.WaitDecompositionCode
+public import Mathlib.Data.Fintype.Pi
+public import Mathlib.Logic.Encodable.Pi
+public import Mathlib.Logic.Equiv.List
+public meta import Mahjong.WaitDecompositionCode
+
+@[expose] public section
 
 open MahjongDomain (Tile Rank Honor TileFormat)
 
@@ -78,9 +83,11 @@ structure Seed (n : Nat) where
   wait : Tile
 deriving BEq, DecidableEq, Fintype
 
-private def keysNondecreasing : List Nat → Bool
+def Internal.keysNondecreasing : List Nat → Bool
   | [] | [_] => true
-  | first :: second :: rest => first ≤ second && keysNondecreasing (second :: rest)
+  | first :: second :: rest => first ≤ second && Internal.keysNondecreasing (second :: rest)
+
+open Internal
 
 private def mentsuOrderLE (first second : MentsuCandidate) : Bool :=
   decide (WinningComponent.orderKey (.inr first) ≤ WinningComponent.orderKey (.inr second))
@@ -116,11 +123,11 @@ private theorem canonicalMentsu_keysNondecreasing (mentsu : List MentsuCandidate
     (fun _ _ relation => by simpa [mentsuOrderLE] using relation)
     sorted
 
-private def mentsuCanonical (shape : WinningShape n) : Bool :=
+def Internal.mentsuCanonical (shape : WinningShape n) : Bool :=
   keysNondecreasing ((List.ofFn shape.mentsu).map fun mentsu =>
     WinningComponent.orderKey (.inr mentsu))
 
-private def selectedIsCanonical (seed : Seed n) : Bool :=
+def Internal.selectedIsCanonical (seed : Seed n) : Bool :=
   match seed.selected with
   | .pair => true
   | .mentsu selected =>
@@ -422,7 +429,7 @@ example :
 疎だが、`sparseCode_injective` により衝突しない。
 -/
 
-private def seedEquiv (n : Nat) :
+def Internal.seedEquiv (n : Nat) :
     Seed n ≃ (MahjongDomain.Pair × (Fin n → MentsuCandidate)) × (ComponentIndex n × Tile) where
   toFun seed := ((seed.shape.pair, seed.shape.mentsu), (seed.selected, seed.wait))
   invFun value :=
@@ -451,7 +458,7 @@ theorem sparseCode_injective : Function.Injective (sparseCode (n := n)) := by
   exact (@Encodable.encode_injective (Seed n) (seedEncodable n)) equal
 
 /-- リストを牌種順に並べ、牌姿を多重集合の標準表現にする。 -/
-private def tileOrderLE (first second : Tile) : Bool :=
+def Internal.tileOrderLE (first second : Tile) : Bool :=
   decide (first.index.val ≤ second.index.val)
 
 def canonicalTiles (tiles : List Tile) : List Tile :=

@@ -1,6 +1,10 @@
-import MahjongComputations.FourTile
-import MahjongComputations.Parallel
-import MahjongComputations.ReportJson
+module
+
+public import MahjongComputations.FourTile
+public import MahjongComputations.Parallel
+public import MahjongComputations.ReportJson
+
+@[expose] public section
 
 /-!
 # Four-tile report generator
@@ -54,7 +58,7 @@ private def reportJson
   ] ++ commonSummary ++ pathologySummaryFields pathologyGroups)
     (commonData ++ pathologyDataFields pathologyGroups)
 
-def run (args : List String) : IO UInt32 := do
+@[no_expose] def run (args : List String) : IO UInt32 := do
   let (workers, outputPath) ←
     MahjongComputations.parseWorkerArgs args "reports/four-tile-direct-report.json"
   let path : System.FilePath := outputPath

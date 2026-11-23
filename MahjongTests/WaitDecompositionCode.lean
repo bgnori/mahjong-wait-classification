@@ -1,29 +1,39 @@
-import Mahjong.WaitDecompositionCode
-import MahjongComputations.Common
+module
+
+public import Mahjong.WaitDecompositionCode
+public import MahjongComputations.Common
+public meta import Mahjong.WaitDecompositionCode
+public meta import MahjongComputations.Common
+
+@[expose] public section
 
 open MahjongDomain (Tile Rank Honor TileFormat)
 
 namespace MahjongTests.WaitDecompositionCode
 
+namespace Internal
+end Internal
+open Internal
+
 open _root_.WaitDecompositionCode
 open _root_.WaitCompletionFinder
 open _root_.MahjongComputations
 
-private structure ClassificationPathologyObservation where
+structure Internal.ClassificationPathologyObservation where
   codes : List Nat
   relationKey : List Nat
   pathologyDegree : Nat
 
-private structure ClassificationPathologyState where
+structure Internal.ClassificationPathologyState where
   observations : List ClassificationPathologyObservation
   waitCoreCache : WaitCoreCache
   uniform : Bool
 
-private def pathologyDegree (witnesses : List WaitPathologyWitness) : Nat :=
+def Internal.pathologyDegree (witnesses : List WaitPathologyWitness) : Nat :=
   (if witnesses.any (fun witness => witness.pathology == .waitSuppression) then 1 else 0) +
     (if witnesses.any (fun witness => witness.pathology == .redundantAmbiguity) then 2 else 0)
 
-private def addClassificationPathologyObservation (irreducibleOnly : Bool)
+def Internal.addClassificationPathologyObservation (irreducibleOnly : Bool)
     (state : ClassificationPathologyState) (group : WaitCompletionGroup) :
     ClassificationPathologyState :=
   if !state.uniform then state else
@@ -76,10 +86,10 @@ theorem sevenTileIrreducibleTenpai_relationClassification_determines_pathologyDe
     tenpaiRelationClassificationHasUniformPathologyDegree 2 true = true := by
   native_decide
 
-private def healthySevenTileCounterexample : List Tile :=
+def Internal.healthySevenTileCounterexample : List Tile :=
   manzu [2, 3, 4, 4, 4, 4] ++ Tile.suitedTiles .pin [5]
 
-private def suppressedSevenTileCounterexample : List Tile :=
+def Internal.suppressedSevenTileCounterexample : List Tile :=
   manzu [2, 2, 2, 2, 3, 4, 5]
 
 /--
@@ -99,25 +109,25 @@ theorem sevenTileTenpai_relationClassification_doesNotDeterminePathologyDegree :
     pathologyDegree (waitPathologyWitnesses suppressedSevenTileCounterexample) = 1 := by
   native_decide
 
-private def firstHealthyTenTileCounterexample : List Tile :=
+def Internal.firstHealthyTenTileCounterexample : List Tile :=
   Tile.suitedTiles .pin [1, 2, 2, 2, 2, 3, 4, 6, 6, 6]
 
-private def firstAmbiguousTenTileCounterexample : List Tile :=
+def Internal.firstAmbiguousTenTileCounterexample : List Tile :=
   Tile.suitedTiles .sou [2, 2, 2, 4, 5, 5, 5, 5, 6, 7]
 
-private def secondHealthyTenTileCounterexample : List Tile :=
+def Internal.secondHealthyTenTileCounterexample : List Tile :=
   manzu [1, 2, 3, 4, 4, 4, 5, 6, 7, 8]
 
-private def secondAmbiguousTenTileCounterexample : List Tile :=
+def Internal.secondAmbiguousTenTileCounterexample : List Tile :=
   Tile.suitedTiles .pin [0, 1, 2, 3, 3, 3, 4, 5, 6, 7]
 
-private def isIrreducibleTenpaiWithDegree (tiles : List Tile) (degree : Nat) : Bool :=
+def Internal.isIrreducibleTenpaiWithDegree (tiles : List Tile) (degree : Nat) : Bool :=
   let completions := findWaitCompletions tiles
   !completions.isEmpty &&
     !canReduceMentsuPreservingWaitCores tiles &&
     pathologyDegree (waitPathologyWitnesses tiles) == degree
 
-private def hasSameRelationClassification (first second : List Tile) : Bool :=
+def Internal.hasSameRelationClassification (first second : List Tile) : Bool :=
   let firstCompletions := findWaitCompletions first
   let secondCompletions := findWaitCompletions second
   waitDecompositionCodes firstCompletions == waitDecompositionCodes secondCompletions &&
@@ -139,16 +149,16 @@ theorem tenTileIrreducibleTenpai_relationClassification_doesNotDeterminePatholog
       secondHealthyTenTileCounterexample secondAmbiguousTenTileCounterexample := by
   native_decide
 
-private def testHand2345678 : List Tile := manzu [1, 2, 3, 4, 5, 6, 7]
-private def testHand1234 : List Tile := manzu [0, 1, 2, 3]
-private def testHand1223 : List Tile := manzu [0, 1, 1, 2]
-private def testHand1233 : List Tile := manzu [0, 1, 2, 2]
-private def testHand1167888 : List Tile := manzu [0, 0, 5, 6, 7, 7, 7]
-private def testHand1166678 : List Tile := manzu [0, 0, 5, 5, 5, 6, 7]
-private def testHandT018 : List Tile := manzu [1, 1, 1, 3, 3, 4, 5]
-private def testHandT026 : List Tile := manzu [1, 1, 1, 1, 2, 3, 3]
-private def testHand1188 : List Tile := manzu [0, 0, 7, 7]
-private def testHand1199 : List Tile := manzu [0, 0, 8, 8]
+def Internal.testHand2345678 : List Tile := manzu [1, 2, 3, 4, 5, 6, 7]
+def Internal.testHand1234 : List Tile := manzu [0, 1, 2, 3]
+def Internal.testHand1223 : List Tile := manzu [0, 1, 1, 2]
+def Internal.testHand1233 : List Tile := manzu [0, 1, 2, 2]
+def Internal.testHand1167888 : List Tile := manzu [0, 0, 5, 6, 7, 7, 7]
+def Internal.testHand1166678 : List Tile := manzu [0, 0, 5, 5, 5, 6, 7]
+def Internal.testHandT018 : List Tile := manzu [1, 1, 1, 3, 3, 4, 5]
+def Internal.testHandT026 : List Tile := manzu [1, 1, 1, 1, 2, 3, 3]
+def Internal.testHand1188 : List Tile := manzu [0, 0, 7, 7]
+def Internal.testHand1199 : List Tile := manzu [0, 0, 8, 8]
 
 example :
     (findWaitCores testHand1223).map WaitCore.toWaitDecomposition =
@@ -169,10 +179,10 @@ example :
     waitDecompositionCodes (findWaitCompletions testHand2345678) = [338, 338, 338] := by
   native_decide
 
-private def suppressionHand : List Tile :=
+def Internal.suppressionHand : List Tile :=
   manzu [0, 0, 0, 0, 1, 1, 1, 1, 2, 3, 3, 3, 3]
 
-private def ambiguityHand : List Tile :=
+def Internal.ambiguityHand : List Tile :=
   Tile.suitedTiles .pin [7, 8] ++
     Tile.suitedTiles .sou [0, 0, 0, 1, 2, 3, 4, 5, 6, 6, 6]
 
@@ -197,14 +207,14 @@ example :
     waitPathologyWitnesses (manzu [0]) = [] ∧
     waitPathologyWitnesses [] = [] := by native_decide
 
-private def nineGatesComponents : List WaitComponent :=
+def Internal.nineGatesComponents : List WaitComponent :=
   [{ kind := .toitsu, tiles := manzu [0, 0] },
    { kind := .shuntsu, tiles := manzu [0, 1, 2] },
    { kind := .shuntsu, tiles := manzu [3, 4, 5] },
    { kind := .shuntsu, tiles := manzu [6, 7, 8] },
    { kind := .toitsu, tiles := manzu [8, 8] }]
 
-private def isIrreducibleTenpai (tiles : List Tile) : Bool :=
+def Internal.isIrreducibleTenpai (tiles : List Tile) : Bool :=
   !(canReduceMentsuPreservingWaitCores tiles)
 
 example :

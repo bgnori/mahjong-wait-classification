@@ -1,6 +1,10 @@
-import MahjongComputations.TenTile
-import MahjongComputations.Parallel
-import MahjongComputations.ReportJson
+module
+
+public import MahjongComputations.TenTile
+public import MahjongComputations.Parallel
+public import MahjongComputations.ReportJson
+
+@[expose] public section
 
 /-!
 # Ten-tile report generator
@@ -30,7 +34,7 @@ private def reportJson (summary : TenTileSummary) (elapsedMs : Nat) : Json :=
     (commonDataFields summary.irreducibleGroups summary.irreducibleRelationGroups
       summary.waitTileCountDistribution ++ pathologyDataFields summary.pathologyGroups)
 
-def run (args : List String) : IO UInt32 := do
+@[no_expose] def run (args : List String) : IO UInt32 := do
   IO.eprintln "ten-tile: parsing arguments"
   let (workers, outputPath) ←
     MahjongComputations.parseWorkerArgs args "reports/ten-tile-report.json"

@@ -1,6 +1,10 @@
-import MahjongComputations.Common
-import MahjongComputations.FourTile
-import MahjongComputations.SevenTile
+module
+
+public import MahjongComputations.Common
+public import MahjongComputations.FourTile
+public import MahjongComputations.SevenTile
+
+@[expose] public section
 
 open MahjongComputations
 

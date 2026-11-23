@@ -1,5 +1,9 @@
-import Mahjong.Pattern
-import MahjongDomain.Hand
+module
+
+public import Mahjong.Pattern
+public import MahjongDomain.Hand
+
+@[expose] public section
 
 open MahjongDomain (Tile Rank Honor TileFormat)
 

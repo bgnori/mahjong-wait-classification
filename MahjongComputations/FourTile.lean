@@ -1,6 +1,11 @@
-import Mahjong.DirectWaitGeneration
-import MahjongComputations.Common
-import MahjongComputations.Parallel
+module
+
+public import Mahjong.DirectWaitGeneration
+public import MahjongComputations.Common
+public import MahjongComputations.Parallel
+public meta import MahjongComputations.Common
+
+@[expose] public section
 
 open MahjongDomain (Tile Rank Honor TileFormat)
 
@@ -13,6 +18,10 @@ studying one-mentsu standard-form tenpai shapes.
 -/
 
 namespace MahjongComputations.FourTile
+
+namespace Internal
+end Internal
+open _root_.MahjongComputations.FourTile.Internal
 
 open DirectWaitGeneration
 open WaitDecompositionCode
@@ -33,10 +42,10 @@ deriving BEq, DecidableEq, Repr
 def allFourTileShapes : List (List Tile) :=
   legalTileMultisetsOfLength 4 Tile.all
 
-private def emptyRelationClassification : WaitDecompositionRelationClassification :=
+def Internal.emptyRelationClassification : WaitDecompositionRelationClassification :=
   { codes := [], signatures := [] }
 
-private def irreducibleClassification
+def Internal.irreducibleClassification
     (irreducible : Bool) (completions : List WaitCompletion) :
     List Nat × WaitDecompositionRelationClassification :=
   if irreducible then
@@ -62,10 +71,10 @@ def report (tiles : List Tile) : FourTileShapeReport :=
 def tenpaiReports : List FourTileShapeReport :=
   (allFourTileShapes.map report).filter fun report => !report.waits.isEmpty
 
-private def directFourTileGenerated : CanonicalGenerationResult :=
+def Internal.directFourTileGenerated : CanonicalGenerationResult :=
   canonicalWaitCompletionGroups 1
 
-private def directReport (report : WaitCompletionGroup) : FourTileShapeReport :=
+def Internal.directReport (report : WaitCompletionGroup) : FourTileShapeReport :=
   let completions := report.completions
   let reducible :=
     canReduceMentsuPreservingWaitCoresGivenCompletions report.tiles completions

@@ -1,5 +1,9 @@
-import MahjongComputations.Common
-import Std.Sync.Mutex
+module
+
+public import MahjongComputations.Common
+public import Std.Sync.Mutex
+
+@[expose] public section
 
 open MahjongDomain (Tile Rank Honor TileFormat)
 
@@ -20,18 +24,20 @@ structure Record where
   completion : WaitCompletion
 deriving BEq, DecidableEq, Repr
 
-private def winningComponentAlphabet : List WinningComponent :=
+def Internal.winningComponentAlphabet : List WinningComponent :=
   Tile.all.map WinningComponent.pair ++
     MentsuCandidate.candidates.map fun mentsu => (.inr mentsu : WinningComponent)
+
+open Internal
 
 /-- Number of bytes in one record for a hand with `mentsuCount` completed mentsu. -/
 def recordWidth (mentsuCount : Nat) : Nat :=
   mentsuHandTenpaiSize mentsuCount + 1 + (mentsuCount + 1)
 
-private def encodeIndex {α : Type} [BEq α] (alphabet : List α) (value : α) : UInt8 :=
+def Internal.encodeIndex {α : Type} [BEq α] (alphabet : List α) (value : α) : UInt8 :=
   UInt8.ofNat (alphabet.idxOf value)
 
-private def decodeIndex {α : Type} (alphabet : List α) (value : Nat) : Option α :=
+def Internal.decodeIndex {α : Type} (alphabet : List α) (value : Nat) : Option α :=
   alphabet[value]?
 
 /-- Encode a normalized hand and completion into one fixed-width record. -/
@@ -83,7 +89,7 @@ structure Writer where
   bufferCapacity : Nat
 
 /-- Open a bucket writer and emit its header. -/
-def Writer.open (path : System.FilePath) (mentsuCount : Nat)
+@[no_expose] def Writer.open (path : System.FilePath) (mentsuCount : Nat)
     (bufferCapacity : Nat := 65536) : IO Writer := do
   let some fileHeader := header mentsuCount
     | throw (IO.userError s!"unsupported mentsu count: {mentsuCount}")
@@ -99,12 +105,12 @@ private def Writer.flush (writer : Writer) : IO Unit := do
     writer.buffer.set ByteArray.empty
 
 /-- Flush and close a bucket writer. -/
-def Writer.close (writer : Writer) : IO Unit := do
+@[no_expose] def Writer.close (writer : Writer) : IO Unit := do
   writer.flush
   writer.handle.flush
 
 /-- Append one record, flushing the in-memory byte buffer when it reaches its capacity. -/
-def Writer.append (writer : Writer) (record : Record) : IO Unit := do
+@[no_expose] def Writer.append (writer : Writer) (record : Record) : IO Unit := do
   let some encoded := encode writer.mentsuCount record
     | throw (IO.userError "invalid external wait-completion record")
   let bytes ← writer.buffer.modifyGet fun bytes =>
@@ -159,7 +165,7 @@ private def BucketSet.bucketFor (buckets : BucketSet) (key : Nat) : Std.Mutex Wr
     (key % buckets.bucketCount) buckets.firstBucket
 
 /-- Append a record to the bucket selected by its normalized hand key. -/
-def BucketSet.append (buckets : BucketSet) (record : Record) : IO Unit :=
+@[no_expose] def BucketSet.append (buckets : BucketSet) (record : Record) : IO Unit :=
   (buckets.bucketFor (tileMultisetKey record.tiles)).atomically do
     let writer ← get
     writer.append record
@@ -201,20 +207,20 @@ private def parseCheckpointField (fieldPrefix value : String) : Option Nat := do
   (value.drop fieldPrefix.length).toNat?
 
 /-- Remove completion markers before regenerating bucket files. -/
-def clearGenerationCheckpoint (directory : System.FilePath) : IO Unit := do
+@[no_expose] def clearGenerationCheckpoint (directory : System.FilePath) : IO Unit := do
   for path in [generationCheckpointPath directory, generationCheckpointPartPath directory] do
     if ← path.pathExists then
       IO.FS.removeFile path
 
 /-- Atomically record that all bucket writers closed successfully. -/
-def writeGenerationCheckpoint (directory : System.FilePath)
+@[no_expose] def writeGenerationCheckpoint (directory : System.FilePath)
     (mentsuCount bucketCount derivationCount : Nat) : IO Unit := do
   let partPath := generationCheckpointPartPath directory
   IO.FS.writeFile partPath (generationCheckpointText mentsuCount bucketCount derivationCount)
   IO.FS.rename partPath (generationCheckpointPath directory)
 
 /-- Return the saved derivation count when the marker and all configured buckets are present. -/
-def readGenerationCheckpoint (directory : System.FilePath)
+@[no_expose] def readGenerationCheckpoint (directory : System.FilePath)
     (mentsuCount bucketCount : Nat) : IO (Option Nat) := do
   let path := generationCheckpointPath directory
   unless ← path.pathExists do return none
@@ -242,7 +248,7 @@ private partial def readRecords {α : Type} (handle : IO.FS.Handle) (mentsuCount
   readRecords handle mentsuCount (← f state record) f
 
 /-- Validate and stream all records from one external bucket file. -/
-def foldFile {α : Type} (path : System.FilePath) (mentsuCount : Nat) (init : α)
+@[no_expose] def foldFile {α : Type} (path : System.FilePath) (mentsuCount : Nat) (init : α)
     (f : α → Record → IO α) : IO α :=
   IO.FS.withFile path .read fun handle => do
     let fileHeader ← handle.read (USize.ofNat headerWidth)
@@ -250,7 +256,7 @@ def foldFile {α : Type} (path : System.FilePath) (mentsuCount : Nat) (init : α
       throw (IO.userError "invalid external wait-completion bucket header")
     readRecords handle mentsuCount init f
 
-private def recordSortKey (mentsuCount : Nat) (record : Record) : Nat :=
+def Internal.recordSortKey (mentsuCount : Nat) (record : Record) : Nat :=
   (encode mentsuCount record).getD ByteArray.empty |>.data.foldl
     (fun key byte => key * 128 + byte.toNat + 1) 0
 

@@ -1,6 +1,10 @@
-import Lean
-import MahjongComputations.Common
-import Mahjong.WaitDecompositionCode
+module
+
+public import Lean
+public import MahjongComputations.Common
+public import Mahjong.WaitDecompositionCode
+
+@[expose] public section
 
 open MahjongDomain (Tile Rank Honor TileFormat)
 

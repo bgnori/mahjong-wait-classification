@@ -1,4 +1,9 @@
-import Mahjong.DirectWaitGeneration
+module
+
+public import Mahjong.DirectWaitGeneration
+public meta import Mahjong.DirectWaitGeneration
+
+@[expose] public section
 
 open MahjongDomain (Tile Rank Honor TileFormat)
 

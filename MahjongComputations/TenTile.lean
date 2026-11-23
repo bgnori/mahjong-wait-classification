@@ -1,9 +1,13 @@
-import Mahjong.DirectWaitGeneration
-import Mahjong.WaitDecompositionCode
-import MahjongComputations.Common
-import MahjongComputations.Parallel
-import MahjongComputations.ExternalWaitCompletion
-import MahjongComputations.BucketClassification
+module
+
+public import Mahjong.DirectWaitGeneration
+public import Mahjong.WaitDecompositionCode
+public import MahjongComputations.Common
+public import MahjongComputations.Parallel
+public import MahjongComputations.ExternalWaitCompletion
+public import MahjongComputations.BucketClassification
+
+@[expose] public section
 
 open MahjongDomain (Tile Rank Honor TileFormat)
 
@@ -17,6 +21,10 @@ non-tenpai shapes.
 -/
 
 namespace MahjongComputations.TenTile
+
+namespace Internal
+end Internal
+open _root_.MahjongComputations.TenTile.Internal
 
 open DirectWaitGeneration
 open WaitCompletionFinder
@@ -40,7 +48,7 @@ structure TenTileSummary where
   pathologyGroups : List WaitPathologyGroup := []
 deriving BEq, DecidableEq, Repr
 
-private def emptySummary : TenTileSummary :=
+def Internal.emptySummary : TenTileSummary :=
   { allTenTileShapes := 0
     enumeratedDerivations := 0
     tenpaiReports := 0
@@ -54,9 +62,9 @@ private def emptySummary : TenTileSummary :=
     irreducibleRelationGroups := []
     waitTileCountDistribution := [] }
 
-private def allTenTileShapeCount : Nat := 1900269316
+def Internal.allTenTileShapeCount : Nat := 1900269316
 
-private def generateBuckets (workers : Nat) (workDirectory : System.FilePath)
+def Internal.generateBuckets (workers : Nat) (workDirectory : System.FilePath)
     (bucketCount : Nat) : IO (List System.FilePath × Nat) := do
   if let some derivationCount ←
       ExternalWaitCompletion.readGenerationCheckpoint workDirectory 3 bucketCount then

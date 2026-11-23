@@ -1,6 +1,10 @@
-import MahjongComputations.SevenTile
-import MahjongComputations.Parallel
-import MahjongComputations.ReportJson
+module
+
+public import MahjongComputations.SevenTile
+public import MahjongComputations.Parallel
+public import MahjongComputations.ReportJson
+
+@[expose] public section
 
 /-!
 # Seven-tile report generator
@@ -30,7 +34,7 @@ private def reportJson (summary : SevenTileSummary) (elapsedMs : Nat) : Json :=
     (commonDataFields summary.irreducibleGroups summary.irreducibleRelationGroups
       summary.waitTileCountDistribution ++ pathologyDataFields summary.pathologyGroups)
 
-def run (args : List String) : IO UInt32 := do
+@[no_expose] def run (args : List String) : IO UInt32 := do
   let (workers, outputPath) ←
     MahjongComputations.parseWorkerArgs args "reports/seven-tile-report.json"
   let path : System.FilePath := outputPath

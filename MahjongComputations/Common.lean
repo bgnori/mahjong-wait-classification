@@ -1,5 +1,9 @@
-import Mahjong.DirectWaitGeneration
-import Std.Data.HashMap
+module
+
+public import Mahjong.DirectWaitGeneration
+public import Std.Data.HashMap
+
+@[expose] public section
 
 open MahjongDomain (Tile Rank Honor TileFormat copiesPerTile)
 
@@ -17,7 +21,7 @@ def tileMultisetKey (tiles : List Tile) : Nat :=
   Tile.all.foldl (fun key tile => key * (copiesPerTile + 1) + tiles.count tile) 0
 
 /-- 各牌種を0枚から物理上限まで選ぶ合法牌多重集合の共通畳み込み。 -/
-private def foldLegalTileMultisetsOfLength {α : Type}
+def Internal.foldLegalTileMultisetsOfLength {α : Type}
     (empty : α) (combine : α → α → α)
     (onComplete : α) (prependCopies : Tile → Nat → α → α) :
     Nat → List Tile → α
@@ -27,10 +31,12 @@ private def foldLegalTileMultisetsOfLength {α : Type}
       (List.range (Nat.min copiesPerTile length + 1)).foldl
         (fun result copies =>
           combine result (prependCopies tile copies
-            (foldLegalTileMultisetsOfLength empty combine onComplete prependCopies
+            (Internal.foldLegalTileMultisetsOfLength empty combine onComplete prependCopies
               (length - copies) rest)))
         empty
 termination_by _ tiles => tiles.length
+
+open MahjongComputations.Internal
 
 /-- 指定した牌種からなる、指定枚数の合法な牌多重集合。 -/
 def legalTileMultisetsOfLength (length : Nat) (tiles : List Tile) : List (List Tile) :=
@@ -54,7 +60,7 @@ structure WaitCompletionGroup where
   completions : List WaitCompletion
 deriving BEq, DecidableEq, Repr
 
-private def waitCompletionEntryKeyLE
+def Internal.waitCompletionEntryKeyLE
     (first second : WaitCompletionEntry) : Bool :=
   decide (tileMultisetKey first.tiles ≤ tileMultisetKey second.tiles)
 
@@ -63,7 +69,7 @@ def insertCompletion
     (completion : WaitCompletion) (completions : List WaitCompletion) : List WaitCompletion :=
   if completions.contains completion then completions else completion :: completions
 
-private def groupSortedWaitCompletionEntry
+def Internal.groupSortedWaitCompletionEntry
     (groups : List WaitCompletionGroup) (entry : WaitCompletionEntry) :
     List WaitCompletionGroup :=
   let key := tileMultisetKey entry.tiles
@@ -105,13 +111,13 @@ def groupWaitDerivations {mentsuCount : Nat}
 ピークメモリは生成件数ではなく、重複除去後の牌姿の種類数に比例する。
 -/
 
-private def canonicalMentsuAlphabet : List MentsuCandidate :=
+def Internal.canonicalMentsuAlphabet : List MentsuCandidate :=
   MentsuCandidate.candidates.mergeSort fun first second =>
     decide (WinningComponent.orderKey (.inr first) ≤ WinningComponent.orderKey (.inr second))
 
-private def defaultMentsuCandidate : MentsuCandidate := .koutsu (.honor 0)
+def Internal.defaultMentsuCandidate : MentsuCandidate := .koutsu (.honor 0)
 
-private def mentsuListToFunction (n : Nat) (mentsuList : List MentsuCandidate) :
+def Internal.mentsuListToFunction (n : Nat) (mentsuList : List MentsuCandidate) :
     Fin n → MentsuCandidate :=
   fun i => mentsuList.getD i.val defaultMentsuCandidate
 
@@ -209,11 +215,11 @@ structure WaitCoreCache where
 def emptyWaitCoreCache : WaitCoreCache :=
   { values := ∅, hits := 0, misses := 0 }
 
-private def insertCachedWaitCoreKeys
+def Internal.insertCachedWaitCoreKeys
     (key : Nat) (cores : Option (List Nat)) (cache : WaitCoreCache) : WaitCoreCache :=
   { cache with values := cache.values.insert key cores }
 
-private def cachedWaitCores
+def Internal.cachedWaitCores
     (tiles : List Tile) (cache : WaitCoreCache) :
   Option (List Nat) × WaitCoreCache :=
   let key := tileMultisetKey tiles
@@ -346,7 +352,7 @@ structure WaitDecompositionRelationGroup where
   pathologyProfileRepresentatives : List WaitPathologyProfileRepresentative := []
 deriving BEq, DecidableEq, Repr
 
-private def pathologyProfileRepresentative (tiles waits : List Tile)
+def Internal.pathologyProfileRepresentative (tiles waits : List Tile)
     (witnesses : List WaitPathologyWitness) : WaitPathologyProfileRepresentative :=
   { waitSuppression := witnesses.any fun witness =>
       witness.pathology == .waitSuppression
@@ -355,7 +361,7 @@ private def pathologyProfileRepresentative (tiles waits : List Tile)
     tiles
     waits }
 
-private def addPathologyProfileRepresentative
+def Internal.addPathologyProfileRepresentative
     (representative : WaitPathologyProfileRepresentative) :
     List WaitPathologyProfileRepresentative → List WaitPathologyProfileRepresentative
   | [] => [representative]
@@ -366,14 +372,14 @@ private def addPathologyProfileRepresentative
       else
         current :: addPathologyProfileRepresentative representative rest
 
-private def mergePathologyProfileRepresentatives
+def Internal.mergePathologyProfileRepresentatives
     (representatives additions : List WaitPathologyProfileRepresentative) :
     List WaitPathologyProfileRepresentative :=
   additions.foldl
     (fun merged addition => addPathologyProfileRepresentative addition merged)
     representatives
 
-private def componentRelationKey (relation : ComponentRelation) : Nat :=
+def Internal.componentRelationKey (relation : ComponentRelation) : Nat :=
   let tileRelationKey := match relation.tileRelation with
     | .overlapping => 0
     | .disjoint => 1
@@ -389,7 +395,7 @@ def waitDecompositionRelationKey
       [signature.code, signature.relations.length] ++
         signature.relations.map componentRelationKey
 
-private def componentKindName : WaitComponentKind → String
+def Internal.componentKindName : WaitComponentKind → String
   | .tanki => "tanki"
   | .toitsu => "toitsu"
   | .ryanmen => "ryanmen"
@@ -493,13 +499,13 @@ def incrementCount (key : Nat) : List (Nat × Nat) → List (Nat × Nat)
 def countOccurrences (values : List Nat) : List (Nat × Nat) :=
   values.foldl (fun counts value => incrementCount value counts) []
 
-private def formatNumberedGroup
+def Internal.formatNumberedGroup
     (tiles : List Tile) (suit : MahjongDomain.Suit) (suffix : String) : String :=
   let digits := (List.ofFn fun rank : Rank => rank).flatMap fun rank =>
     List.replicate (tiles.count (.suited suit rank)) (toString (rank.val + 1))
   if digits.isEmpty then "" else String.join digits ++ suffix
 
-private def formatHonorGroup (tiles : List Tile) : String :=
+def Internal.formatHonorGroup (tiles : List Tile) : String :=
   let digits := (List.ofFn fun honor : Honor => honor).flatMap fun honor =>
     List.replicate (tiles.count (.honor honor)) (toString (honor.val + 1))
   if digits.isEmpty then "" else String.join digits ++ "z"

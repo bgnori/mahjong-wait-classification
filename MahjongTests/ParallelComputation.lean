@@ -1,8 +1,12 @@
-import MahjongComputations.Parallel
-import MahjongComputations.ExternalWaitCompletion
-import MahjongComputations.ThirteenTile
-import MahjongComputations.FourTile
-import MahjongComputations.SevenTile
+module
+
+public import MahjongComputations.Parallel
+public import MahjongComputations.ExternalWaitCompletion
+public import MahjongComputations.ThirteenTile
+public import MahjongComputations.FourTile
+public import MahjongComputations.SevenTile
+
+@[expose] public section
 
 open MahjongDomain (Tile Rank Honor TileFormat)
 
@@ -248,7 +252,7 @@ private def testPathologyCheckpoint : IO Unit := do
   finally
     BucketClassification.clearResults [path]
 
-def run : IO UInt32 := do
+@[no_expose] def run : IO UInt32 := do
   testDynamicParallelMap
   testPartitionedCanonicalGeneration
   testExternalRecordCodec

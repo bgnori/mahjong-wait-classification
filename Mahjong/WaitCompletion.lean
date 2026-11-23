@@ -1,5 +1,11 @@
-import Mahjong.Basic
-import Mahjong.Pattern
+module
+
+public import Mahjong.Basic
+public import Mahjong.Pattern
+public meta import Mahjong.Pattern
+public meta import Mathlib.Data.Fintype.Defs
+
+@[expose] public section
 
 open MahjongDomain (Tile Rank Honor TileFormat)
 
@@ -46,8 +52,10 @@ example : orderKey (WinningComponent.koutsu (.honor Honor.east)) = 82 := rfl
 theorem orderKey_injective : Function.Injective orderKey := by
   native_decide
 
-private def orderLE (a b : WinningComponent) : Bool :=
+def Internal.orderLE (a b : WinningComponent) : Bool :=
   decide (orderKey a ≤ orderKey b)
+
+open Internal
 
 private theorem orderKeyLE_trans (a b c : WinningComponent) :
     orderLE a b = true → orderLE b c = true → orderLE a c = true := by

@@ -1,6 +1,11 @@
-import Mahjong.Basic
-import Mahjong.Pattern
-import Mahjong.WaitCompletionFinder
+module
+
+public import Mahjong.Basic
+public import Mahjong.Pattern
+public import Mahjong.WaitCompletionFinder
+public meta import Mahjong.WaitCompletionFinder
+
+@[expose] public section
 
 open MahjongDomain (Tile Rank Honor TileFormat)
 
@@ -172,12 +177,14 @@ instance : Fintype WaitReducibility :=
     intro reducibility
     cases reducibility <;> simp)
 
-private def completeComponent (component : WinningComponent) : WaitComponent :=
+def Internal.completeComponent (component : WinningComponent) : WaitComponent :=
   { kind := match component with
       | .inl _ => .toitsu
       | .inr (.shuntsu _) => .shuntsu
       | .inr (.koutsu _) => .koutsu
     tiles := component.tiles }
+
+open Internal
 
 /--
 通常形の和了分割に現れる和了構成部品から、指定した待ち牌を1枚除いたときに見える不完全部品の種別を返す。
@@ -228,7 +235,7 @@ def componentKindAfterRemovingWait (wait : Tile) (component : WinningComponent) 
 待ち牌を最初の1枚だけ除き、`WaitComponent` にまとめる。
 指定牌を除けず種別が `none` の場合は、この関数も `none` を返す。
 -/
-private def componentAfterRemovingWait (wait : Tile) (component : WinningComponent) :
+def Internal.componentAfterRemovingWait (wait : Tile) (component : WinningComponent) :
     Option WaitComponent :=
   (componentKindAfterRemovingWait wait component).map fun kind =>
     { kind, tiles := component.tiles.erase wait }
@@ -237,33 +244,33 @@ example : componentAfterRemovingWait
     (.suited .man 4) (WinningComponent.pair (.suited .man 4)) =
       some { kind := .tanki, tiles := [.suited .man 4] } := rfl
 
-private def componentProduct (components : List WaitComponentKind) : Nat :=
+def Internal.componentProduct (components : List WaitComponentKind) : Nat :=
   components.foldl (fun product component => product * component.prime) 1
 
-private def keyDigitOffset : Nat := 1
-private def tileKeyBase : Nat := tileKindCount + keyDigitOffset
-private def maxComponentTiles : Nat := mentsuTileCount
-private def maxWaitComponents : Nat := mentsuHandMaxMentsuCount + mentsuHandPairCount
-private def componentTileKeyStride : Nat := tileKeyBase ^ maxComponentTiles
-private def decompositionComponentKeyStride : Nat := WaitComponentKind.count * componentTileKeyStride
-private def decompositionWaitKeyStride : Nat := decompositionComponentKeyStride ^ maxWaitComponents
-private def abstractComponentKeyBase : Nat := WaitComponentKind.count + keyDigitOffset
-private def waitKeyStride : Nat := tileKindCount
+def Internal.keyDigitOffset : Nat := 1
+def Internal.tileKeyBase : Nat := tileKindCount + keyDigitOffset
+def Internal.maxComponentTiles : Nat := mentsuTileCount
+def Internal.maxWaitComponents : Nat := mentsuHandMaxMentsuCount + mentsuHandPairCount
+def Internal.componentTileKeyStride : Nat := tileKeyBase ^ maxComponentTiles
+def Internal.decompositionComponentKeyStride : Nat := WaitComponentKind.count * componentTileKeyStride
+def Internal.decompositionWaitKeyStride : Nat := decompositionComponentKeyStride ^ maxWaitComponents
+def Internal.abstractComponentKeyBase : Nat := WaitComponentKind.count + keyDigitOffset
+def Internal.waitKeyStride : Nat := tileKindCount
 
-private def waitComponentKey (component : WaitComponentKind) : Nat :=
+def Internal.waitComponentKey (component : WaitComponentKind) : Nat :=
   WaitComponentKind.all.idxOf component
 
-private def concreteComponentKey (component : WaitComponent) : Nat :=
+def Internal.concreteComponentKey (component : WaitComponent) : Nat :=
   waitComponentKey component.kind * componentTileKeyStride +
     component.tiles.foldl
       (fun key tile => key * tileKeyBase + tile.index.val + keyDigitOffset) 0
 
-private def canonicalizeWaitDecomposition
+def Internal.canonicalizeWaitDecomposition
   (components : List WaitComponent) : List WaitComponent :=
   components.mergeSort fun first second =>
     concreteComponentKey first ≤ concreteComponentKey second
 
-private def componentTileRelation
+def Internal.componentTileRelation
     (first second : WaitComponent) : ComponentTileRelation :=
   if first.tiles.isEmpty || second.tiles.isEmpty then
     .invalidComponents
@@ -272,7 +279,7 @@ private def componentTileRelation
   else
     .disjoint
 
-private def componentRelationKey (relation : ComponentRelation) : Nat :=
+def Internal.componentRelationKey (relation : ComponentRelation) : Nat :=
   let tileRelationKey := match relation.tileRelation with
     | .overlapping => 0
     | .disjoint => 1
@@ -299,11 +306,11 @@ def componentRelations : List WaitComponent → List ComponentRelation
       (rest.map (componentRelation first) ++ componentRelations rest)
         |>.mergeSort fun left right => componentRelationKey left ≤ componentRelationKey right
 
-private def componentRelationsKey (relations : List ComponentRelation) : Nat :=
+def Internal.componentRelationsKey (relations : List ComponentRelation) : Nat :=
   let base := WaitComponentKind.count * WaitComponentKind.count * 3 + 1
   relations.foldl (fun key relation => key * base + componentRelationKey relation + 1) 0
 
-private def relationSignatureLE
+def Internal.relationSignatureLE
     (first second : WaitDecompositionRelationSignature) : Bool :=
   if first.code == second.code then
     componentRelationsKey first.relations ≤ componentRelationsKey second.relations
@@ -315,17 +322,17 @@ def waitDecompositionKey (decomposition : WaitDecomposition) : Nat :=
     decomposition.components.foldl
       (fun key component => key * decompositionComponentKeyStride + concreteComponentKey component) 0
 
-private def waitKindDecompositionKey (decomposition : WaitKindDecomposition) : Nat :=
+def Internal.waitKindDecompositionKey (decomposition : WaitKindDecomposition) : Nat :=
   decomposition.components.foldl
     (fun key component =>
       key * abstractComponentKeyBase + waitComponentKey component + keyDigitOffset) 0 *
       waitKeyStride +
     decomposition.wait.index.val
 
-private def waitDecompositionCodeEntryKey (entry : WaitDecompositionCodeEntry) : Nat :=
+def Internal.waitDecompositionCodeEntryKey (entry : WaitDecompositionCodeEntry) : Nat :=
   entry.code * waitKeyStride + entry.wait.index.val
 
-private def deduplicateAndSortBy {α : Type} [BEq α]
+def Internal.deduplicateAndSortBy {α : Type} [BEq α]
     (key : α → Nat) (values : List α) : List α :=
   values.eraseDups.mergeSort fun first second => key first ≤ key second
 
@@ -336,7 +343,7 @@ private def deduplicateAndSortBy {α : Type} [BEq α]
 それ以外は `completeComponent` で完成した種別のまま残す。指定牌を除けない部品は選択肢にせず、
 同じ待ち牌を除ける部品が複数あれば、除去元ごとに別の待ち分解を作る。
 -/
-private def componentDecompositions (completion : WaitCompletion) :
+def Internal.componentDecompositions (completion : WaitCompletion) :
     List (List WaitComponent) :=
   let rec selectWinningComponent : List WinningComponent → List (List WaitComponent)
     | [] => []
@@ -555,7 +562,7 @@ def waitDecompositionCodes (completions : List WaitCompletion) : List Nat :=
     |>.map (fun entry => entry.code)
     |>.mergeSort fun first second => first ≤ second
 
-private structure WaitDecompositionRelationEntry where
+structure Internal.WaitDecompositionRelationEntry where
   wait : Tile
   signature : WaitDecompositionRelationSignature
 deriving BEq, DecidableEq
@@ -611,12 +618,12 @@ example : waitDecompositionCodes
 -/
 
 /-- 桁の値をすべて `[0, base)` に収めた `List Nat` を、`base` 進の双方向記数法で1つの自然数へ埋め込む。 -/
-private def bijectiveBaseEncode (base : Nat) : List Nat → Nat
+def Internal.bijectiveBaseEncode (base : Nat) : List Nat → Nat
   | [] => 0
   | digit :: rest => (digit + 1) + base * bijectiveBaseEncode base rest
 
 /-- `bijectiveBaseEncode` の逆関数。`code = 0` を列の終わりの合図として使う。 -/
-private def bijectiveBaseDecode (base : Nat) (code : Nat) : List Nat :=
+def Internal.bijectiveBaseDecode (base : Nat) (code : Nat) : List Nat :=
   if h : code = 0 then
     []
   else
@@ -663,7 +670,7 @@ def combinationsWithRepetitionOver {α : Type} : List α → Nat → List (List 
         combinationsWithRepetitionOver rest (n + 1)
 
 /-- `componentProduct` が実際に取り得る値をすべて数え上げ、重複を除いて昇順に並べたもの。 -/
-private def waitDecompositionCodeSpace : List Nat :=
+def Internal.waitDecompositionCodeSpace : List Nat :=
   ((List.range (maxWaitComponents + 1)).flatMap fun length =>
       combinationsWithRepetitionOver WaitComponentKind.all length)
     |>.map componentProduct
@@ -673,11 +680,11 @@ private def waitDecompositionCodeSpace : List Nat :=
 example : waitDecompositionCodeSpace.length = 792 := by native_decide
 
 /-- `waitDecompositionCodeSpace` の中での `code` の順位。素数の積を、その値の代わりに通し番号へ詰め直す。 -/
-private def compactCodeRank (code : Nat) : Nat :=
+def Internal.compactCodeRank (code : Nat) : Nat :=
   waitDecompositionCodeSpace.idxOf code
 
 /-- `compactCodeRank` の逆関数。通し番号から元の素数積コードを復元する。 -/
-private def compactCodeOfRank (rank : Nat) : Nat :=
+def Internal.compactCodeOfRank (rank : Nat) : Nat :=
   waitDecompositionCodeSpace.getD rank 0
 
 /-- `code` が `componentProduct` の実現可能値なら、通し番号への詰め直しから元のコードをちょうど復元できる。 -/
@@ -850,7 +857,7 @@ def irreducibleSingleSuitSevenTileExamples : List (String × List Tile) :=
    ("1111333m", manzu [0, 0, 0, 0, 2, 2, 2]),
    ("1111222m", manzu [0, 0, 0, 0, 1, 1, 1])]
 
-private def insertWaitDecompositionCodeClass (entry : String × List Nat) :
+def Internal.insertWaitDecompositionCodeClass (entry : String × List Nat) :
   List (List Nat × List String) → List (List Nat × List String)
   | [] => [(entry.2, [entry.1])]
   | current :: rest =>

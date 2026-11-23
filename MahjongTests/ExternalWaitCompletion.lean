@@ -1,4 +1,8 @@
-import MahjongComputations.ExternalWaitCompletion
+module
+
+public import MahjongComputations.ExternalWaitCompletion
+
+@[expose] public section
 
 open MahjongDomain (Tile Rank Honor TileFormat)
 
@@ -130,7 +134,7 @@ private def testStableBucketHeaderAndCorruption : IO Unit := do
   finally
     IO.FS.removeFile path
 
-def run : IO UInt32 := do
+@[no_expose] def run : IO UInt32 := do
   testStableRecordFormats
   testCorruptRecordsRejected
   testStableBucketHeaderAndCorruption
