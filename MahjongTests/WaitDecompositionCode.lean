@@ -151,7 +151,7 @@ private def testHand1188 : List Tile := manzu [0, 0, 7, 7]
 private def testHand1199 : List Tile := manzu [0, 0, 8, 8]
 
 example :
-    findWaitCores testHand1223 =
+    (findWaitCores testHand1223).map WaitCore.toWaitDecomposition =
       [{ wait := .suited .man 1,
          components := [{ kind := .tanki, tiles := manzu [1] }] },
        { wait := .suited .man 1,
@@ -242,13 +242,14 @@ example :
   native_decide
 
 example :
-  waitCoreExtractions (findWaitCompletions testHand1234) =
-      [{ wait := .suited .man 0,
-         core := [{ kind := .tanki, tiles := [.suited .man 0] }],
-         removedMentsu := [{ kind := .shuntsu, tiles := manzu [1, 2, 3] }] },
-       { wait := .suited .man 3,
-         core := [{ kind := .tanki, tiles := [.suited .man 3] }],
-         removedMentsu := [{ kind := .shuntsu, tiles := manzu [0, 1, 2] }] }] := by
+    (waitCoreExtractions (findWaitCompletions testHand1234)).map
+        (fun extraction => (extraction.core.toWaitDecomposition, extraction.removedMentsu)) =
+      [({ wait := .suited .man 0,
+          components := [{ kind := .tanki, tiles := [.suited .man 0] }] },
+        [{ kind := .shuntsu, tiles := manzu [1, 2, 3] }]),
+       ({ wait := .suited .man 3,
+          components := [{ kind := .tanki, tiles := [.suited .man 3] }] },
+        [{ kind := .shuntsu, tiles := manzu [0, 1, 2] }])] := by
   native_decide
 
 example :

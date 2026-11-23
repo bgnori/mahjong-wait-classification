@@ -621,14 +621,14 @@ Coreの `Pair.orderedTiles` と `MentsuCandidate.orderedTiles` が部品を共�
 - `|>`
 - `List`
 
-`waitCores` は、発見済みの全待ち分解から `WaitCoreExtraction` を作り、それぞれを `WaitCore` に変換する。
-この変換では、待ち牌 `wait` と核成分列 `core` を残し、どの完成面子を分離したかを表す `removedMentsu` は忘れる。
+`waitCores` は、発見済みの全待ち分解から `WaitCoreExtraction` を作り、抽出済みの `WaitCore` を取り出す。
+この段階で、待ち牌 `wait` と核成分列 `components` を持つ核だけが残り、どの完成面子を分離したかを表す `removedMentsu` は忘れる。
 これにより、異なる和了分割から同じ待ち牌と核成分列が得られた場合、それらを同じ待ち核として比較できる。
 
 前節の「単騎 `4m`、完成順子 `123p`」という待ち分解なら、待ち核には待ち牌 `4m` と単騎 `4m` だけが残り、
 分離した順子 `123p` は含まれない。
 
-1つの待ち牌から異なる核成分列が得られることもある。`1223m` に `2m` を加えた和了分割では、`2m` を雀頭に使う解釈と、`123m` の順子に使う解釈の両方がある。前者は単騎、後者は `13m` の嵌張で、後者には残った雀頭 `22m` も核成分として残る。次のLean `example` は、どちらも待ち牌が `2m` である2つの核を列挙する。
+1つの待ち牌から異なる核成分列が得られることもある。`1223m` に `2m` を加えた和了分割では、`2m` を雀頭に使う解釈と、`123m` の順子に使う解釈の両方がある。前者は単騎、後者は `13m` の嵌張で、後者には残った雀頭 `22m` も核成分として残る。次のLean `example` は、どちらも待ち牌が `2m` である2つの核を列挙する。`WaitCore` は証拠フィールドを持つ独立した構造体なので、比較用のリテラルには `WaitCore.toWaitDecomposition` で読み直した一般の待ち分解を使う。
 
 ```lean
 import Mahjong.WaitDecompositionCode
@@ -638,7 +638,7 @@ open WaitCompletionFinder
 open WaitDecompositionCode
 
 example :
-    findWaitCores (manzu [0, 1, 1, 2]) =
+    (findWaitCores (manzu [0, 1, 1, 2])).map WaitCore.toWaitDecomposition =
       [{ wait := .suited .man 1,
          components := [{ kind := .tanki, tiles := manzu [1] }] },
        { wait := .suited .man 1,

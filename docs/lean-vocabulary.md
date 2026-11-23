@@ -357,7 +357,7 @@ inductive型のconstructorは、その型の値や証拠を作る方法である
 ### map
 
 `xs.map f` は、リスト `xs` の各要素に関数 `f` を適用し、結果を同じ順番で並べたリストを作る。
-`waitCores` では、各 `WaitCoreExtraction` から待ち牌と核成分列だけを持つ `WaitCore` を作る。
+`waitCores` では、各 `WaitCoreExtraction` から抽出済みの `WaitCore` を取り出す。
 
 ### `List.attach`
 

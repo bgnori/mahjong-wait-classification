@@ -97,15 +97,57 @@ structure WaitDecompositionRelationClassification where
   signatures : List WaitDecompositionRelationSignature
 deriving BEq, DecidableEq, Repr
 
-/-- 完成面子を除いた核成分列と、除去した面子を分けて保持する抽出結果。 -/
-structure WaitCoreExtraction where
+/-- 待ち分解の成分が完成面子（順子・刻子）であるか。 -/
+def isCompletedMentsu (component : WaitComponent) : Bool :=
+  component.kind == .shuntsu || component.kind == .koutsu
+
+/--
+完成面子を除去済みの待ち核。`mentsuFree` は、核成分列に順子・刻子が残っていないことの証拠である。
+
+`WaitDecomposition` とは相互に代入できない。一般の待ち分解から核を得るには
+`extractWaitCore` による明示的な変換を要求し、核を一般の待ち分解として読み直すには
+`toWaitDecomposition` を使う。
+-/
+structure WaitCore where
   wait : Tile
-  core : List WaitComponent
+  components : List WaitComponent
+  mentsuFree : components.all (fun component => !isCompletedMentsu component) = true
+
+namespace WaitCore
+
+/-- 証拠を忘れ、待ち核を一般の待ち分解として読み直す。 -/
+def toWaitDecomposition (core : WaitCore) : WaitDecomposition :=
+  { wait := core.wait, components := core.components }
+
+/-- 待ち牌と核成分列が一致すれば、証拠の与え方によらず待ち核として等しい。 -/
+theorem ext {first second : WaitCore}
+    (waitEq : first.wait = second.wait)
+    (componentsEq : first.components = second.components) : first = second := by
+  cases first
+  cases second
+  cases waitEq
+  cases componentsEq
+  rfl
+
+instance : DecidableEq WaitCore := fun first second =>
+  if same : first.wait = second.wait ∧ first.components = second.components then
+    isTrue (ext same.1 same.2)
+  else
+    isFalse fun equal => same (by cases equal; exact ⟨rfl, rfl⟩)
+
+instance : BEq WaitCore where
+  beq first second := first.wait == second.wait && first.components == second.components
+
+instance : Repr WaitCore where
+  reprPrec core prec := reprPrec core.toWaitDecomposition prec
+
+end WaitCore
+
+/-- 抽出済みの待ち核と、核から分離した完成面子を分けて保持する抽出結果。 -/
+structure WaitCoreExtraction where
+  core : WaitCore
   removedMentsu : List WaitComponent
 deriving BEq, DecidableEq, Repr
-
-/-- 完成面子を除去済みの `WaitDecomposition`。待ち核であることは生成経路が保証する。 -/
-abbrev WaitCore := WaitDecomposition
 
 /-- 牌の位置を忘れ、部品種別だけを残した待ち分解。 -/
 structure WaitKindDecomposition where
@@ -348,11 +390,8 @@ example : waitDecompositions
             [.suited .pin 0, .suited .pin 1, .suited .pin 2] }] }] := by
   native_decide
 
-private def isCompletedMentsu (component : WaitComponent) : Bool :=
-  component.kind == .shuntsu || component.kind == .koutsu
-
 /--
-1つの具体牌付き待ち分解を、待ち核の成分列と、そこから分離した完成面子に分ける。
+1つの具体牌付き待ち分解を、待ち核と、そこから分離した完成面子に分ける。
 
 順子 `.shuntsu` と刻子 `.koutsu` は `removedMentsu` に移し、それ以外の不完全部品は `core` に残す。
 待ち牌 `wait` と各部品の具体的な牌種列は保持するため、後続処理は「どの完成面子を除いたか」を失わずに、
@@ -362,8 +401,11 @@ private def isCompletedMentsu (component : WaitComponent) : Bool :=
 読むためのLean語彙: `structure`, `filter`, `fun`, `!`。
 -/
 def extractWaitCore (decomposition : WaitDecomposition) : WaitCoreExtraction :=
-  { wait := decomposition.wait
-    core := decomposition.components.filter fun component => !isCompletedMentsu component
+  { core :=
+      { wait := decomposition.wait
+        components := decomposition.components.filter fun component => !isCompletedMentsu component
+        mentsuFree := List.all_eq_true.mpr fun _component member =>
+          (List.mem_filter.mp member).2 }
     removedMentsu := decomposition.components.filter isCompletedMentsu }
 
 /-- 発見済みの待ち分解から、完成面子を除いた待ち核を抽出する。 -/
@@ -371,11 +413,15 @@ def waitCoreExtractions
     (completions : List WaitCompletion) : List WaitCoreExtraction :=
   (waitDecompositions completions).map extractWaitCore
 
+/-- Exact compact key for one concrete wait core. -/
+def waitCoreKey (core : WaitCore) : Nat :=
+  waitDecompositionKey core.toWaitDecomposition
+
 /--
 発見済みの全待ち分解から、比較可能な待ち核集合を作る。
 
-各 `WaitCoreExtraction` から `removedMentsu` を忘れ、待ち牌 `wait` と核成分列 `core` だけを
-`WaitCore` に残す。同じ待ち核が複数の和了分割から得られても1件として扱えるよう重複を除き、
+各 `WaitCoreExtraction` から `removedMentsu` を忘れ、抽出済みの `WaitCore` だけを集める。
+同じ待ち核が複数の和了分割から得られても1件として扱えるよう重複を除き、
 待ち牌と核成分列から作るキーの順に整列する。
 
 返り値は `List WaitCore` だが、重複がなく順序も正規化されているため、待ち核の有限集合として比較できる。
@@ -383,12 +429,8 @@ def waitCoreExtractions
 -/
 def waitCores (completions : List WaitCompletion) : List WaitCore :=
   waitCoreExtractions completions
-    |>.map (fun extraction => { wait := extraction.wait, components := extraction.core })
-    |> deduplicateAndSortBy waitDecompositionKey
-
-/-- Exact compact key for one concrete wait core. -/
-def waitCoreKey (core : WaitCore) : Nat :=
-  waitDecompositionKey core
+    |>.map (fun extraction => extraction.core)
+    |> deduplicateAndSortBy waitCoreKey
 
 /-- Exact compact keys for a normalized wait-core list. -/
 def waitCoreKeys (cores : List WaitCore) : List Nat :=

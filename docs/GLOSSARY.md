@@ -79,7 +79,7 @@ Leanの構文やタクティクは [lean-vocabulary.md](lean-vocabulary.md) を�
 - `WaitComponentKind`: `WaitComponent` から具体的な牌種列を忘れた種別。
 - `WaitDecomposition`: 待ち牌と、具体牌付きの `List WaitComponent` を持つ待ち分解。
 - `WaitKindDecomposition`: 待ち牌と `List WaitComponentKind` を持つ、部品種別だけの待ち分解。
-- `WaitCoreExtraction`: `WaitDecomposition` から完成面子を分離し、核成分列と除去した面子を保持した結果。
+- `WaitCoreExtraction`: `WaitDecomposition` から完成面子を分離し、抽出済みの待ち核と除去した面子を保持した結果。
 
 `WaitKindDecomposition` で忘れるのは `WaitComponent.tiles` だけであり、待ち牌と部品種別列は残る。
 
@@ -124,8 +124,10 @@ WinningShape + selected WinningComponent + wait
 ### Wait core / 待ち核
 
 待ち核は、このプロジェクトで「1つの待ち牌」と「完成面子を除いたあとに残る核成分列」の組を指す説明語彙である。
-コード上では `WaitCore` に対応する。`WaitCore` は `WaitDecomposition` の型別名であり、
-完成面子を除去済みであることは `waitCores` までの生成経路が保証する。
+コード上では `WaitCore` に対応する。`WaitCore` は `WaitDecomposition` から独立した構造体であり、
+核成分列に順子・刻子が残っていないことを `mentsuFree` フィールドの証拠として型で保証する。
+一般の待ち分解から核を得るには `extractWaitCore` による明示的な変換を使い、
+核を一般の待ち分解として読み直すには `WaitCore.toWaitDecomposition` を使う。
 
 数学でいう kernel ではなく、完成面子を削ったあとにも保存される、分類上の本質部分を表すために `core` という語を使う。
 
@@ -133,7 +135,7 @@ WinningShape + selected WinningComponent + wait
 
 - `WaitCore.wait`: 待ち核に対応する待ち牌。
 - `WaitCore.components`: 待ち牌を除いたあとに残る核成分列。
-- `WaitCoreExtraction.core`: `WaitCore.components` に対応する核成分列。名前は `core` だが、待ち牌は含まない。
+- `WaitCoreExtraction.core`: 抽出済みの待ち核そのもの。待ち牌と核成分列を `WaitCore` として保持する。
 - `WaitCoreExtraction.removedMentsu`: 核から分離された完成面子。
 
 例:
