@@ -7,6 +7,9 @@ on:
     paths:
       - ".github/workflows/pages.yml"
       - "scripts/build_pages.py"
+      - "scripts/collect_build_metrics.py"
+      - "scripts/test_build_pages.py"
+      - "scripts/test_collect_build_metrics.py"
       - "web/**"
       - "reports/report-viewer.html"
       - "reports/four-tile-direct-report.json"
@@ -14,6 +17,12 @@ on:
       - "reports/ten-tile-report.json"
       - "reports/thirteen-tile-report.json"
   workflow_dispatch:
+  workflow_run:
+    workflows: ["Checks"]
+    types: [completed]
+    branches: [main]
+  schedule:
+    - cron: "23 4 * * *"
 
 permissions:
   contents: read
@@ -24,6 +33,7 @@ concurrency:
 
 jobs:
   build:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -34,8 +44,17 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      - name: Test Pages scripts
+        run: |
+          python3 -m unittest discover -s scripts -p 'test_build_pages.py'
+          python3 -m unittest discover -s scripts -p 'test_collect_build_metrics.py'
+
       - name: Assemble static site
         run: python3 scripts/build_pages.py _site
+      - name: Collect Lean build metrics
+        env:
+          METRICS_TOKEN: ${{ secrets.LEAN_METRICS_TOKEN }}
+        run: python3 scripts/collect_build_metrics.py _site/build-metrics/data.json
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
