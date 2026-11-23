@@ -28,6 +28,11 @@ Tenhou IDは入力境界の形式であり、分類の内部表現には持ち�
 `WinningPartitionSpec`は分類固有の分割仕様であり、単に名前を
 揃えるためにCoreの完成仕様へ統合しない。
 
+待ち分類の`Hand`は`MahjongDomain.Hand`を基底とし、面子数、各牌種の4枚上限、
+面子数から決まる総枚数の証拠を加えたテンパイ牌姿である。Coreの基底型は
+カウント表現だけを共有し、テンパイ形の制約は分類側で保つ。Tenhou IDは
+`Mahjong.TenhouInput.decodeHand`で入力境界に限って扱う。
+
 ## Consumer-specific terms / 利用側固有用語
 
 ### Winning components / 和了構成部品

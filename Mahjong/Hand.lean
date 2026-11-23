@@ -1,4 +1,5 @@
 import Mahjong.Pattern
+import MahjongDomain.Hand
 
 open MahjongDomain (Tile Rank Honor TileFormat)
 
@@ -12,9 +13,8 @@ open MahjongDomain (Tile Rank Honor TileFormat)
 1枚、4枚、7枚、10枚、13枚の手牌だけを扱う。
 -/
 /-- Int34相当の牌種カウントで表す通常形の聴牌手牌。 -/
-structure Hand where
+structure Hand extends MahjongDomain.Hand where
   mentsuCount : Fin (mentsuHandMaxMentsuCount + 1)
-  counts : MahjongDomain.TileCounts
   counts_valid : counts.Valid
   total_tiles :
     (∑ tile : Tile, counts tile) = mentsuHandTenpaiSize mentsuCount
