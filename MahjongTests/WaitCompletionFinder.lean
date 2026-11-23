@@ -1,5 +1,6 @@
 import Mahjong.WaitCompletionFinder
 import Mahjong.Hand
+import Mahjong.TenhouInput
 import Mathlib.Util.AssertNoSorry
 
 open MahjongDomain (Tile Rank Honor TileFormat)
@@ -32,33 +33,38 @@ example :
 example : Tile.all.map (fun tile => tile.index.val) = List.range 34 := by
   decide
 
-/-- Every physical ID preserves both the old tile index and copy number encoding. -/
-example (id : MahjongDomain.PhysicalTileId) :
-    ∃ tile : Tile, ∃ copy : Fin 4,
-      id.val = tile.index.val * 4 + copy.val ∧ id.tile = tile := by
-  refine ⟨id.tile, ⟨id.val % 4, by omega⟩, ?_, rfl⟩
-  rw [MahjongDomain.PhysicalTileId.tile_index]
-  change id.val = id.val / 4 * 4 + id.val % 4
-  omega
+private def countBasedHand : Hand :=
+  { mentsuCount := 1
+    counts := MahjongDomain.TileCounts.ofList
+      [.suited .man 4, .suited .man 4, .suited .man 5, .suited .man 6]
+    counts_valid := by native_decide
+    total_tiles := by
+      rw [MahjongDomain.TileCounts.ofList_sum_eq_length]
+      rfl }
+
+example : countBasedHand.tileTypes =
+    [.suited .man 4, .suited .man 4, .suited .man 5, .suited .man 6] := by
+  decide
 
 example :
-    ([16, 17, 52, 53, 88, 89] : List MahjongDomain.PhysicalTileId).map
-        (fun id => id.int37Index.val) = [0, 5, 10, 15, 20, 25] ∧
-    ([16, 17, 52, 53, 88, 89] : List MahjongDomain.PhysicalTileId).map
-        (fun id => id.tile.index.val) = [4, 4, 13, 13, 22, 22] := by
+    (Mahjong.TenhouInput.decodeHand 1 [16, 17, 52, 53]).map Hand.tileTypes =
+      .ok [.suited .man 4, .suited .man 4, .suited .pin 4, .suited .pin 4] := by
   decide
 
-private def physicalTestHand : Hand :=
-  { mentsuCount := 1
-    tiles := ⟨fun position =>
-      if position.val = 0 then 17 else if position.val = 1 then 20
-      else if position.val = 2 then 16 else 24, by
-        intro first second equal
-        fin_cases first <;> fin_cases second <;> simp_all⟩ }
+example :
+    Mahjong.TenhouInput.decodeHand 1 [16, 17, 52] =
+      .error (.wrongHandSize 4 3) := by
+  rfl
 
-example : physicalTestHand.tileTypes =
-    [.suited .man 4, .suited .man 5, .suited .man 4, .suited .man 6] := by
-  decide
+example :
+    Mahjong.TenhouInput.decodeHand 1 [16, 16, 52, 53] =
+      .error (.tenhou .duplicateId) := by
+  rfl
+
+example :
+    Mahjong.TenhouInput.decodeHand 1 [16, 17, 52, 136] =
+      .error (.tenhou (.idOutOfRange 136)) := by
+  rfl
 
 private def testHandA : List Tile := Tile.suitedTiles .man [2, 3, 4, 4, 4] ++
   Tile.suitedTiles .sou [7, 7]

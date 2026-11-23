@@ -3,10 +3,9 @@ module
 public import Init
 public meta import Init
 
-public import MahjongDomain.Representation
+public import MahjongDomain.Tile
 
 public import Mathlib.Data.Fin.Basic
-public import Mathlib.Data.Finset.Basic
 public import Mathlib.Data.Fintype.Basic
 public import Mathlib.Data.Fintype.Prod
 public import Mathlib.Data.Fintype.Sigma
@@ -18,8 +17,7 @@ import Mathlib.Tactic.DeriveFintype
 /-!
 # 麻雀牌の基礎定義
 
-牌種と物理牌IDはCoreの `MahjongDomain.Tile` と
-`MahjongDomain.PhysicalTileId` を直接利用する。
+牌種はCoreの `MahjongDomain.Tile` を直接利用する。
 -/
 
 /-- 数牌のランク数。 -/
@@ -37,14 +35,3 @@ def suitOrderKey (suit : MahjongDomain.Suit) : Nat :=
 
 /-- 牌種の総数。 -/
 abbrev tileKindCount : Nat := 34
-
-/-- 山を構成する物理牌の総数。 -/
-abbrev deckSize : Nat := tileKindCount * MahjongDomain.copiesPerTile
-
-/-- 136枚すべての物理牌からなる山。 -/
-def deck : Finset MahjongDomain.PhysicalTileId :=
-  Finset.univ
-
-/-- 物理牌の山の枚数は34種類それぞれ4枚である。 -/
-theorem deck_cardinality : deck.card = deckSize := by
-  simp [deck, deckSize, tileKindCount, MahjongDomain.copiesPerTile]

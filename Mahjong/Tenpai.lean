@@ -8,5 +8,5 @@ import Mahjong.WaitCompletionFinder
 待ちの意味論は手牌枚数によらず共通であり、4枚・7枚専用の証拠型は使わない。
 -/
 
-/-- 物理的な手牌に結び付いた、通常形の待ちの証拠。 -/
+/-- カウント表現の手牌に結び付いた、通常形の待ちの証拠。 -/
 abbrev Tenpai (hand : Hand) := WaitCompletionFinder.Wait hand.tileTypes

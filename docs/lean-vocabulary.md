@@ -629,16 +629,12 @@ inductive型のconstructorは、その型の値や証拠を作る方法である
 ### rfl
 
 `rfl` は、定義を展開すると左辺と右辺が同じ形になる等式を証明するタクティクである。
-`deck_cardinality` では、`deckSize` などの略記を展開した後、残った等式が定義上同じであることを確認する。
+`TenhouId.decode` の境界例では、具体的なIDをデコードした結果が定義から計算できることを確認する。
 
-### Finset
+### Except
 
-`Finset` は、重複のない有限集合を表す型である。`deck : Finset MahjongDomain.PhysicalTileId` は、山を構成する物理牌全体を
-有限集合として持つ、という意味になる。
-
-### `.card`
-
-`.card` は有限集合の要素数を取り出す。`deck.card` は、有限集合 `deck` に含まれる物理牌の枚数を表す。
+`Except Error Value` は、成功値`Value`かエラー`Error`のどちらかを表す。
+`TenhouId.decode`は範囲外の値をエラーとして返し、`decodeTenhouIds`はID列の重複も拒否する。
 
 ### `∈`
 

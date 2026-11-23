@@ -5,7 +5,7 @@ This directory contains the Mahjong formalization used as the main Lean study ex
 ## Reading Order
 
 1. `Basic.lean`
-   - Mahjong tiles: suits, ranks, honors, physical tiles, deck cardinality.
+   - Mahjong tile kinds: suits, ranks, honors, and tile formatting.
    - Tile formatting helpers.
 
 2. `Pattern.lean`
@@ -13,8 +13,8 @@ This directory contains the Mahjong formalization used as the main Lean study ex
    - Shared pairs, shuntsu, mentsu candidates, and winning components.
 
 3. `Hand.lean`
-   - Hand sizes used in the study project.
-   - Projection from physical hands to tile-type lists.
+   - Hand sizes and Int34-equivalent tile-kind counts.
+   - Projection from counts to the canonical tile-type list.
 
 4. `WaitCompletion.lean`
    - The `WaitCompletion` data type: one wait tile and one winning partition.
@@ -37,7 +37,11 @@ This directory contains the Mahjong formalization used as the main Lean study ex
    - Provides a noncomputable perfect-hash specification between all derivations and finite indices.
 
 8. `Tenpai.lean`
-   - A thin bridge from physical `Hand` values to the single semantic `Wait` type.
+   - A thin bridge from count-based `Hand` values to the single semantic `Wait` type.
+
+`TenhouInput.lean` is an optional input-boundary module. It decodes raw Tenhou
+IDs through `MahjongDomain.Tenhou` and constructs count-based hands; the core
+wait-classification modules do not depend on Tenhou IDs.
 
 ## Import Entry Points
 

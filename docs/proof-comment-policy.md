@@ -65,23 +65,22 @@
 
 このコメントでは、定理固有の意味を説明し、Lean語彙の詳細説明は語彙ページに任せる。
 
-## `deck_cardinality` の粒度例
+## `TileCounts.ofTenhou_sum` の粒度例
 
 よい粒度の例:
 
 ```lean
 /--
-麻雀牌の山は `deckSize` 枚、つまり34種類それぞれを `copiesPerTile` 枚ずつ含む。
+Tenhou ID列を正規化した牌種カウントへ変換しても、総枚数は変わらない。
 
-この定理は、物理牌として扱う山の枚数が通常の麻雀牌の総数と一致することを保証する。
-証明では `deck` の定義を展開し、有限型 `PhysicalTileId` 全体の個数が `tileKindCount * copiesPerTile`
-になることを確認する。
+この定理は、Tenhou入力境界での変換が牌を増減させないことを保証する。
+証明は `TileCounts.ofTenhou` の定義と `TileCounts.ofList_sum_eq_length` を使う。
 
-読むためのLean語彙: `abbrev`, `Finset`, `.card`, `theorem`, `simp`, `rfl`。
+読むためのLean語彙: `theorem`, `List.map`, `List.length`, `simp`。
 -/
 ```
 
-この例では、麻雀上の「山の枚数」とLean上の「有限集合の要素数」を対応させる説明に集中する。
+この例では、外部形式から内部カウント表現への変換で保つ性質を説明する。
 
 ## `MentsuCandidate.mem_candidates` の粒度例
 

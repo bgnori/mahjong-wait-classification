@@ -27,46 +27,17 @@
 各節の「読む前に知る語彙」に未知の項目があれば、先に [lean-vocabulary.md](lean-vocabulary.md) を参照する。
 麻雀固有の「待ち核」「可約」「待ち分解」「待ち導出」などは [GLOSSARY.md](GLOSSARY.md) にまとめている。
 
-## 物理牌の枚数を読む
+## Int34相当のカウントで表す手牌を読む
 
-次の実例は、麻雀牌の山の枚数を示す `deck_cardinality` である。
+`Hand.lean` の `Hand` は、通常形聴牌として扱う面子数 `mentsuCount` と
+正規化牌種ごとの`TileCounts`を持つ。赤5は通常5へ統合され、Tenhou IDや物理コピー番号は
+内部状態に含まれない。`counts_valid`が牌種ごとの4枚上限を、`total_tiles`が
+`standardTenpaiHandSize mentsuCount`枚であることを保証する。
 
-読む前に知る語彙:
-
-- `abbrev`
-- `Finset`
-- `.card`
-- `theorem`
-- `simp`
-- `rfl`
-
-ここでは、牌種 `Tile` と各物理牌を表すCoreの `PhysicalTileId` を区別する。
-`deck_cardinality` は、物理牌全体の有限集合 `deck` の枚数が `deckSize` と一致すること、つまり
-通常の麻雀牌の総数と同じになることを確認する。
-
-## 物理牌としての手牌を読む
-
-次のまとまりは、`Hand.lean` の `Hand` と `Hand.tileTypes` である。
-
-読む前に知る語彙:
-
-- `structure`
-- `Fin`
-- `↪`
-- `List.ofFn`
-
-`Hand` は、通常形聴牌として扱う面子数 `mentsuCount` と、その面子数に対応する枚数の物理牌を持つ。
-`mentsuCount` は `Fin (standardHandMentsuCount + 1)` なので、0面子から4面子までの範囲に型で制限される。
-手牌枚数は `standardTenpaiHandSize mentsuCount`、つまり `3n + 1` で決まる。
-
-`tiles` の型は `Fin (standardTenpaiHandSize mentsuCount) ↪ MahjongDomain.PhysicalTileId` である。
-左辺の `Fin` は手牌内の位置を表し、右辺のIDはTenhou順の0から135の物理牌を表す。
-IDの4による商が牌種index、余りが4枚中のcopy番号である。
-`↪` は埋め込みなので、同じ物理牌が2回現れないこともこの型が担う。
-
-一方、通常形の待ち判定は物理牌そのものではなく、牌種 `Tile` の列を扱う。
-`Hand.tileTypes` は `List.ofFn` で各位置の物理牌を取り出し、IDの `tile` を並べて `List Tile` に変換する。
-同じ牌種の別の物理牌は同じ `Tile` として現れるため、ここから先の探索では牌種ごとの枚数をリストの重複として読む。
+`Hand.tileTypes` は`Tile.all`の順にカウントを展開し、既存の待ち意味論が使う
+`List Tile`を作る。外部データにTenhou IDを使う場合は`TenhouInput.decodeHand`を
+入力境界で呼びます。この関数はCoreの`MahjongDomain.Tenhou`デコーダを使い、
+範囲外ID・重複ID・手牌枚数を検査してからカウントベースの`Hand`を返します。
 
 ## 牌の表示形式を読む
 

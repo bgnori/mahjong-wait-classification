@@ -7,11 +7,11 @@ definitions are canonical in the [Mahjong Domain Core glossary](https://github.c
 この文書は、待ち分類固有の分解・順序・可約性の語彙と、共通用語との意味差を記録します。
 Leanの構文やタクティクは [lean-vocabulary.md](lean-vocabulary.md) を参照してください。
 
-牌種、136物理牌ID、Int37／34種表現、カウント集約、牌種容量の共通定義は、
+牌種、Int37／34種表現、カウント集約、牌種容量の共通定義は、
 [Mahjong Domain Coreの用語集](https://github.com/bgnori/mahjong-domain-core/blob/main/docs/GLOSSARY.md)
 を正本とします。
-分類はCoreのスート、牌種、表示形式と `PhysicalTileId` を直接利用する。
-物理牌IDはTenhou順で、商が牌種index、余りがcopy番号である。
+分類はCoreのスート、牌種、表示形式と牌種カウントを直接利用する。
+Tenhou IDは入力境界の形式であり、分類の内部表現には持ち込みません。
 牌種の4枚則はCoreの`copiesPerTile`、`TileCounts.Valid`と`TileCounts.CanAdd`を使い、
 この分類に渡された牌列を対象に適用する。
 
