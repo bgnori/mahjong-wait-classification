@@ -7,9 +7,7 @@ on:
     paths:
       - ".github/workflows/pages.yml"
       - "scripts/build_pages.py"
-      - "scripts/collect_build_metrics.py"
       - "scripts/test_build_pages.py"
-      - "scripts/test_collect_build_metrics.py"
       - "web/**"
       - "reports/report-viewer.html"
       - "reports/four-tile-direct-report.json"
@@ -26,6 +24,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: pages
@@ -41,20 +40,31 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check out CI page tools
+        uses: actions/checkout@v6
+        with:
+          repository: bgnori/mahjong-domain-core
+          ref: main
+          path: _ci-tools
+          persist-credentials: false
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
       - name: Test Pages scripts
         run: |
           python3 -m unittest discover -s scripts -p 'test_build_pages.py'
-          python3 -m unittest discover -s scripts -p 'test_collect_build_metrics.py'
+          python3 -m unittest discover -s _ci-tools/scripts -p 'test_build_ci_page.py'
+          python3 -m unittest discover -s _ci-tools/scripts -p 'test_collect_build_metrics.py'
 
       - name: Assemble static site
-        run: python3 scripts/build_pages.py _site
-      - name: Collect Lean build metrics
+        run: |
+          python3 scripts/build_pages.py _site
+          python3 _ci-tools/scripts/build_ci_page.py _site
+      - name: Collect this repository's metrics
         env:
-          METRICS_TOKEN: ${{ secrets.LEAN_METRICS_TOKEN }}
-        run: python3 scripts/collect_build_metrics.py _site/build-metrics/data.json
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 _ci-tools/scripts/collect_build_metrics.py _site/ci/data.json
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4

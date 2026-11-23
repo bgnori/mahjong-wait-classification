@@ -60,10 +60,6 @@ def build(output: Path, repository: str) -> None:
     classifier.mkdir(exist_ok=True)
     for name in CLASSIFIER_FILES:
         shutil.copy2(ROOT / "web" / name, classifier / name)
-    metrics = output / "build-metrics"
-    metrics.mkdir(exist_ok=True)
-    shutil.copy2(ROOT / "web" / "build-metrics.html", metrics / "index.html")
-    (metrics / "data.json").write_text("[]\n", encoding="utf-8")
     (output / ".nojekyll").touch()
 
 

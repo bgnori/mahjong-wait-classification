@@ -8,13 +8,12 @@ import build_pages
 
 
 class BuildPagesTest(unittest.TestCase):
-    def test_build_includes_metrics_page_and_empty_data(self) -> None:
+    def test_build_does_not_claim_reserved_ci_path(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             output = Path(temporary_directory)
             with patch.object(build_pages, "result_revision", return_value={}):
                 build_pages.build(output, "example/project")
-            self.assertTrue((output / "build-metrics/index.html").is_file())
-            self.assertEqual(json.loads((output / "build-metrics/data.json").read_text()), [])
+            self.assertFalse((output / "ci").exists())
 
     def test_write_report_adds_result_revision(self) -> None:
         revision = {
