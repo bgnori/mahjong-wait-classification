@@ -150,6 +150,16 @@ private def testHandT026 : List Tile := manzu [1, 1, 1, 1, 2, 3, 3]
 private def testHand1188 : List Tile := manzu [0, 0, 7, 7]
 private def testHand1199 : List Tile := manzu [0, 0, 8, 8]
 
+example :
+    findWaitCores testHand1223 =
+      [{ wait := .suited .man 1,
+         components := [{ kind := .tanki, tiles := manzu [1] }] },
+       { wait := .suited .man 1,
+         components :=
+           [{ kind := .toitsu, tiles := manzu [1, 1] },
+            { kind := .kanchan, tiles := manzu [0, 2] }] }] := by
+  native_decide
+
 /-- Equal classification codes for different waits retain their multiplicity and order. -/
 example :
     waitDecompositionCodeEntries (findWaitCompletions testHand2345678) =

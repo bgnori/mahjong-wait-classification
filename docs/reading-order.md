@@ -628,8 +628,27 @@ Coreの `Pair.orderedTiles` と `MentsuCandidate.orderedTiles` が部品を共�
 前節の「単騎 `4m`、完成順子 `123p`」という待ち分解なら、待ち核には待ち牌 `4m` と単騎 `4m` だけが残り、
 分離した順子 `123p` は含まれない。
 
-最後の `deduplicateAndSortBy` は、同じ待ち核の重複を除き、一定の順序に整列する。
-したがって返り値の型は `List WaitCore` だが、コード上では重複を除いて整列したリストを有限の待ち核集合として使う。
+1つの待ち牌から異なる核成分列が得られることもある。`1223m` に `2m` を加えた和了分割では、`2m` を雀頭に使う解釈と、`123m` の順子に使う解釈の両方がある。前者は単騎、後者は `13m` の嵌張で、後者には残った雀頭 `22m` も核成分として残る。次のLean `example` は、どちらも待ち牌が `2m` である2つの核を列挙する。
+
+```lean
+import Mahjong.WaitDecompositionCode
+
+open MahjongDomain (Tile Rank Honor TileFormat)
+open WaitCompletionFinder
+open WaitDecompositionCode
+
+example :
+    findWaitCores (manzu [0, 1, 1, 2]) =
+      [{ wait := .suited .man 1,
+         components := [{ kind := .tanki, tiles := manzu [1] }] },
+       { wait := .suited .man 1,
+         components :=
+           [{ kind := .toitsu, tiles := manzu [1, 1] },
+            { kind := .kanchan, tiles := manzu [0, 2] }] }] := by
+  native_decide
+```
+
+この2件は待ち牌が同じでも`components`が異なるため、同じ待ちの重複ではなく別々の解釈である。一方、同じ待ち牌と同じ核成分列が複数の和了分割から得られた場合は、最後の`deduplicateAndSortBy`で重複が除かれる。返り値の`List WaitCore`は、待ち牌の異なる結果と、同じ待ち牌に対する複数の核候補の両方を保持する待ち核集合として使われる。
 
 ## 待ち核集合を保つ面子除去を読む
 
