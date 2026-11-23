@@ -13,14 +13,14 @@ open MahjongDomain (MentsuCandidate)
 assert_no_sorry MahjongDomain.TileCounts.ofList_apply
 assert_no_sorry MahjongDomain.MentsuCandidateList.counts_eq_list_count
 assert_no_sorry MahjongDomain.Tile.index_injective
-assert_no_sorry WinningPartitionSpec.toDomainStandardCompletion
-assert_no_sorry standardCompletion_toStandardAgari
-assert_no_sorry IsStandardAgari.toDomainStandardCompletion_of_length
+assert_no_sorry WinningPartitionSpec.toDomainMentsuHandCompletion
+assert_no_sorry mentsuHandCompletion_toMentsuHandAgari
+assert_no_sorry IsMentsuHandAgari.toDomainMentsuHandCompletion_of_length
 
 example : IsWaitFor
     [.suited .man 0, .suited .man 0, .suited .man 0, .honor Honor.east]
     (.honor Honor.east) := by
-  unfold IsWaitFor IsStandardAgari
+  unfold IsWaitFor IsMentsuHandAgari
   native_decide
 
 /-- Shared suits retain the classification's suit-major order and keys. -/

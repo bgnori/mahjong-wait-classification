@@ -26,7 +26,7 @@ private def winningComponentAlphabet : List WinningComponent :=
 
 /-- Number of bytes in one record for a hand with `mentsuCount` completed mentsu. -/
 def recordWidth (mentsuCount : Nat) : Nat :=
-  standardTenpaiHandSize mentsuCount + 1 + (mentsuCount + 1)
+  mentsuHandTenpaiSize mentsuCount + 1 + (mentsuCount + 1)
 
 private def encodeIndex {α : Type} [BEq α] (alphabet : List α) (value : α) : UInt8 :=
   UInt8.ofNat (alphabet.idxOf value)
@@ -36,7 +36,7 @@ private def decodeIndex {α : Type} (alphabet : List α) (value : Nat) : Option 
 
 /-- Encode a normalized hand and completion into one fixed-width record. -/
 def encode (mentsuCount : Nat) (record : Record) : Option ByteArray := do
-  guard (record.tiles.length == standardTenpaiHandSize mentsuCount)
+  guard (record.tiles.length == mentsuHandTenpaiSize mentsuCount)
   let components := record.completion.winningComponents.toList
   guard (components.length == mentsuCount + 1)
   let bytes := record.tiles.foldl
@@ -49,7 +49,7 @@ def encode (mentsuCount : Nat) (record : Record) : Option ByteArray := do
 def decode (mentsuCount : Nat) (bytes : ByteArray) : Option Record := do
   guard (bytes.size == recordWidth mentsuCount)
   let values := bytes.data.toList.map UInt8.toNat
-  let handSize := standardTenpaiHandSize mentsuCount
+  let handSize := mentsuHandTenpaiSize mentsuCount
   let tiles ← (values.take handSize).mapM (decodeIndex Tile.all)
   let waitIndex ← values[handSize]?
   let wait ← decodeIndex Tile.all waitIndex

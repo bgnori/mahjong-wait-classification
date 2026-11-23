@@ -569,7 +569,8 @@ private theorem hasLegalTileCounts_of_valid (derivation : WaitDerivation n) :
     simpa only [Seed.valid, Bool.and_eq_true] using derivation.2
   exact of_decide_eq_true validParts.1.1.2
 
-private theorem derivation_waitFor (derivation : WaitDerivation n) (standard : n ≤ standardHandMentsuCount) :
+private theorem derivation_waitFor (derivation : WaitDerivation n)
+    (mentsuHandCountBound : n ≤ mentsuHandMaxMentsuCount) :
     IsWaitFor (hand derivation) derivation.1.wait := by
   have permutation := wait_cons_hand_perm_winningShape derivation
   have partition : WinningPartitionSpec
@@ -585,7 +586,7 @@ private theorem derivation_waitFor (derivation : WaitDerivation n) (standard : n
     · refine ⟨n, List.mem_range.mpr (by omega), ?_⟩
       rw [winningShape_tiles_length derivation.1.shape] at lengthEq
       simp only [List.length_cons] at lengthEq
-      simp [standardTenpaiHandSize] at lengthEq ⊢
+      simp [mentsuHandTenpaiSize] at lengthEq ⊢
       omega
     · intro tile
       have tileCountEq := permutation.count tile
@@ -608,7 +609,7 @@ private theorem derivation_waitFor (derivation : WaitDerivation n) (standard : n
         MahjongDomain.copiesPerTile at waitCount
       simp only [List.count_cons, beq_self_eq_true, ite_true] at countEq
       omega
-    · unfold IsStandardAgari isWinning
+    · unfold IsMentsuHandAgari isWinning
       have nonempty : winningPartitions (derivation.1.wait :: hand derivation) ≠ [] :=
         List.ne_nil_of_mem partitionMember
       simp [nonempty]
@@ -621,7 +622,7 @@ def completion (derivation : WaitDerivation n) : WaitCompletion :=
 /--
 通常手範囲の直接生成による待ち導出は、同じ牌姿に対する既存Finderの出力に必ず現れる。
 
-`standard` は面子数 `n` が通常手の上限4以下であることを表す。この範囲では `derivation_waitFor` が、
+`mentsuHandCountBound` は面子数 `n` が面子手の上限4以下であることを表す。この範囲では `derivation_waitFor` が、
 生成した `hand derivation` に対して `derivation.1.wait` が実際の待ち牌であることを保証する。
 また `winningShape_partition` が元の完成形の分割を与え、`wait_cons_hand_perm_winningShape` と
 `WinningPartitionSpec.of_perm` により、その分割を「待ち牌を生成牌姿へ加えた列」へ移す。
@@ -634,11 +635,11 @@ def completion (derivation : WaitDerivation n) : WaitCompletion :=
 `.mpr`, `WinningPartitionSpec.of_perm`。
 -/
 theorem completion_mem_findWaitCompletions (derivation : WaitDerivation n)
-    (standard : n ≤ standardHandMentsuCount) :
+    (mentsuHandCountBound : n ≤ mentsuHandMaxMentsuCount) :
   completion derivation ∈ findWaitCompletions (hand derivation) := by
   apply (mem_findWaitCompletions_iff _ _).mpr
   exact .intro derivation.1.wait derivation.1.shape.components
-    (derivation_waitFor derivation standard)
+    (derivation_waitFor derivation mentsuHandCountBound)
     ((winningShape_partition derivation.1.shape).of_perm
       (wait_cons_hand_perm_winningShape derivation).symm)
 
@@ -691,7 +692,7 @@ Finderの `WinningPartitionSpec` から雀頭と面子列を取り出し、面�
 theorem exists_derivation_of_mem_findWaitCompletions {tiles : List Tile}
     {found : WaitCompletion} (member : found ∈ findWaitCompletions tiles) :
     ∃ n, ∃ derivation : WaitDerivation n,
-  n ≤ standardHandMentsuCount ∧
+  n ≤ mentsuHandMaxMentsuCount ∧
   hand derivation = canonicalTiles tiles ∧ completion derivation = found := by
   have completionFor := (mem_findWaitCompletions_iff tiles found).mp member
   cases completionFor with
@@ -718,16 +719,16 @@ theorem exists_derivation_of_mem_findWaitCompletions {tiles : List Tile}
         have shapeLegal : decide (HasLegalTileCounts shape.tiles) = true :=
           legalTileCounts_decide_eq_true_of_perm shapeTilesPerm
             (legal_cons_of_waitFor waitFor)
-        have standard : sorted.length ≤ standardHandMentsuCount := by
+        have mentsuHandCountBound : sorted.length ≤ mentsuHandMaxMentsuCount := by
           obtain ⟨mentsuCount, mentsuCountMem, legalSize⟩ := waitFor.1.1
-          have mentsuCountLe : mentsuCount ≤ standardHandMentsuCount := by
+          have mentsuCountLe : mentsuCount ≤ mentsuHandMaxMentsuCount := by
             have := List.mem_range.mp mentsuCountMem
             omega
           have lengthEq := shapeTilesPerm.length_eq
           rw [winningShape_tiles_length shape] at lengthEq
           simp only [List.length_cons] at lengthEq
-          simp [standardTenpaiHandSize, standardHandPairCount, mentsuTileCount,
-            standardHandMentsuCount] at legalSize lengthEq mentsuCountLe ⊢
+          simp [mentsuHandTenpaiSize, mentsuHandPairCount, mentsuTileCount,
+            mentsuHandMaxMentsuCount] at legalSize lengthEq mentsuCountLe ⊢
           omega
         have waitInRaw : wait ∈
             ((.inl pair : WinningComponent) :: rawMentsu.map fun candidate =>
@@ -750,7 +751,7 @@ theorem exists_derivation_of_mem_findWaitCompletions {tiles : List Tile}
             rw [shapeMentsu]
             exact canonicalMentsu_keysNondecreasing rawMentsu
           let derivation : WaitDerivation sorted.length := ⟨seed, seedValid⟩
-          refine ⟨sorted.length, derivation, standard, ?_, ?_⟩
+          refine ⟨sorted.length, derivation, mentsuHandCountBound, ?_, ?_⟩
           · apply canonicalTiles_eq_of_perm
             exact (List.Perm.erase wait shapeTilesPerm).trans
               (List.Perm.cons_inv (List.perm_cons_erase (by simp)).symm)
@@ -796,7 +797,7 @@ theorem exists_derivation_of_mem_findWaitCompletions {tiles : List Tile}
                 earlier != candidate) = true
               exact selectedCanonical_at_idxOf candidateSorted
           let derivation : WaitDerivation sorted.length := ⟨seed, seedValid⟩
-          refine ⟨sorted.length, derivation, standard, ?_, ?_⟩
+          refine ⟨sorted.length, derivation, mentsuHandCountBound, ?_, ?_⟩
           · apply canonicalTiles_eq_of_perm
             exact (List.Perm.erase wait shapeTilesPerm).trans
               (List.Perm.cons_inv (List.perm_cons_erase (by simp)).symm)
@@ -826,12 +827,12 @@ theorem mem_findWaitCompletions_iff_exists_derivation
     (tiles : List Tile) (found : WaitCompletion) :
     found ∈ findWaitCompletions tiles ↔
       ∃ n, ∃ derivation : WaitDerivation n,
-        n ≤ standardHandMentsuCount ∧
+        n ≤ mentsuHandMaxMentsuCount ∧
         hand derivation = canonicalTiles tiles ∧ completion derivation = found := by
   constructor
   · exact exists_derivation_of_mem_findWaitCompletions
-  · rintro ⟨n, derivation, standard, handEq, rfl⟩
-    have generated := completion_mem_findWaitCompletions derivation standard
+  · rintro ⟨n, derivation, mentsuHandCountBound, handEq, rfl⟩
+    have generated := completion_mem_findWaitCompletions derivation mentsuHandCountBound
     have generatedMeaning := (mem_findWaitCompletions_iff _ _).mp generated
     apply (mem_findWaitCompletions_iff _ _).mpr
     apply generatedMeaning.of_perm
@@ -939,7 +940,7 @@ theorem indexed_derivations_complete (tiles : List Tile) :
     simp [handMatches]
 
 /-- 通常手の範囲 `n = 0, ..., 4` にある全待ち導出をまとめた有限型。 -/
-abbrev StandardWaitDerivation :=
-  (n : Fin (standardHandMentsuCount + 1)) × WaitDerivation n.val
+abbrev MentsuHandWaitDerivation :=
+  (n : Fin (mentsuHandMaxMentsuCount + 1)) × WaitDerivation n.val
 
 end DirectWaitGeneration

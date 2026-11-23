@@ -32,7 +32,7 @@
 `Hand.lean` の `Hand` は、通常形聴牌として扱う面子数 `mentsuCount` と
 正規化牌種ごとの`TileCounts`を持つ。赤5は通常5へ統合され、Tenhou IDや物理コピー番号は
 内部状態に含まれない。`counts_valid`が牌種ごとの4枚上限を、`total_tiles`が
-`standardTenpaiHandSize mentsuCount`枚であることを保証する。
+`mentsuHandTenpaiSize mentsuCount`枚であることを保証する。
 
 `Hand.tileTypes` は`Tile.all`の順にカウントを展開し、既存の待ち意味論が使う
 `List Tile`を作る。外部データにTenhou IDを使う場合は`TenhouInput.decodeHand`を
@@ -402,7 +402,7 @@ Coreの `Pair.orderedTiles` と `MentsuCandidate.orderedTiles` が部品を共�
 `mem_winningPartitions_iff_spec` の `.mp` で宣言的な `WinningPartitionSpec` の証拠へ変える。
 手牌間の順列の両側へ同じ候補牌を加えた `permutation.cons candidate` を
 `WinningPartitionSpec.of_perm` に渡せば、並べ替え後にも同じ分割を移せる。最後に同値定理の `.mpr` で
-列挙結果への所属へ戻し、結果が空でないことから `IsStandardAgari` を復元する。
+列挙結果への所属へ戻し、結果が空でないことから `IsMentsuHandAgari` を復元する。
 
 この往復は、入力順に依存しないという意味論上の性質を `WinningPartitionSpec` が担当し、
 `isWinning` はその証拠を探索する実行器として使われていることを表す。ソース中の例は、
@@ -943,7 +943,7 @@ $2 \times 13 = 26$、`[tanki, shuntsu, shuntsu]` は $2 \times 13^2 = 338$ に�
 
 Finder所属の仕様 `mem_findWaitCompletions_iff` が要求する証拠は二つある。一つは、候補牌が `hand derivation` の
 実際の待ちであることを示す `IsWaitFor` である。内部補題 `derivation_waitFor` は、完成形の牌数、待ち導出の
-4枚制限、待ち牌を戻した完成形の分割からこの証拠を作る。仮定 `n ≤ standardHandMentsuCount` は、生成牌姿が
+4枚制限、待ち牌を戻した完成形の分割からこの証拠を作る。仮定 `n ≤ mentsuHandMaxMentsuCount` は、生成牌姿が
 通常手として許される1、4、7、10、13枚の範囲にあることを保証するために使う。
 
 もう一つは、待ち牌を加えた牌姿の `WinningPartitionSpec` である。`winningShape_partition` は元の完成形に対する

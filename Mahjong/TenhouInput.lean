@@ -10,13 +10,13 @@ inductive DecodeError where
   deriving DecidableEq, Repr
 
 /-- Decode Tenhou IDs at the input boundary into an Int34-based hand. -/
-def decodeHand (mentsuCount : Fin (standardHandMentsuCount + 1))
+def decodeHand (mentsuCount : Fin (mentsuHandMaxMentsuCount + 1))
     (rawIds : List Nat) : Except DecodeError Hand := do
   let ids ←
     match MahjongDomain.decodeTenhouIds rawIds with
     | .ok ids => pure ids
     | .error error => throw (.tenhou error)
-  let expected := standardTenpaiHandSize mentsuCount
+  let expected := mentsuHandTenpaiSize mentsuCount
   if hsize : ids.length = expected then
     let counts := MahjongDomain.TileCounts.ofTenhou ids
     if hvalid : counts.Valid then

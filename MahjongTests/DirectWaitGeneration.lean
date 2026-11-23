@@ -23,7 +23,7 @@ private def testHand2345678 : List Tile := manzu [1, 2, 3, 4, 5, 6, 7]
 example (found : WaitCompletion) :
     found ∈ findWaitCompletions testHand2345678 ↔
       ∃ n, ∃ derivation : WaitDerivation n,
-        n ≤ standardHandMentsuCount ∧
+        n ≤ mentsuHandMaxMentsuCount ∧
         hand derivation = canonicalTiles testHand2345678 ∧
         completion derivation = found := by
   exact mem_findWaitCompletions_iff_exists_derivation _ _

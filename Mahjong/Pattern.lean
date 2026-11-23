@@ -22,14 +22,14 @@ open MahjongDomain (Tile Rank Honor TileFormat)
 abbrev mentsuTileCount : Nat := 3
 
 /-- 通常の最大手牌に含まれる面子数。 -/
-abbrev standardHandMentsuCount : Nat := 4
+abbrev mentsuHandMaxMentsuCount : Nat := 4
 
 /-- 通常形に含まれる雀頭の数。 -/
-abbrev standardHandPairCount : Nat := 1
+abbrev mentsuHandPairCount : Nat := 1
 
 /-- 指定した面子数に対応する通常形聴牌の手牌枚数。 -/
-def standardTenpaiHandSize (mentsuCount : Nat) : Nat :=
-  mentsuCount * mentsuTileCount + standardHandPairCount
+def mentsuHandTenpaiSize (mentsuCount : Nat) : Nat :=
+  mentsuCount * mentsuTileCount + mentsuHandPairCount
 
 /-- 順子・嵌張ターツの開始位置数。 -/
 abbrev shuntsuStartCount : Nat := numberedRankCount - 2

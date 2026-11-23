@@ -13,11 +13,11 @@ open MahjongDomain (Tile Rank Honor TileFormat)
 -/
 /-- Int34相当の牌種カウントで表す通常形の聴牌手牌。 -/
 structure Hand where
-  mentsuCount : Fin (standardHandMentsuCount + 1)
+  mentsuCount : Fin (mentsuHandMaxMentsuCount + 1)
   counts : MahjongDomain.TileCounts
   counts_valid : counts.Valid
   total_tiles :
-    (∑ tile : Tile, counts tile) = standardTenpaiHandSize mentsuCount
+    (∑ tile : Tile, counts tile) = mentsuHandTenpaiSize mentsuCount
 
 namespace Hand
 

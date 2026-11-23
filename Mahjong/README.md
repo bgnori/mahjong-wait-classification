@@ -21,7 +21,7 @@ This directory contains the Mahjong formalization used as the main Lean study ex
    - Winning components and their canonical ordering.
 
 5. `WaitCompletionFinder.lean`
-   - Shared semantics: `IsStandardAgari`, `IsWaitFor`, `IsTenpai`, and `Wait`.
+   - Shared semantics: `IsMentsuHandAgari`, `IsWaitFor`, `IsTenpai`, and `Wait`.
    - Legal tenpai sizes and physical copy-count validation.
    - `WaitCompletionFinder.findWaitCompletions` and executable completion discovery.
 

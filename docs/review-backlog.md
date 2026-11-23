@@ -16,21 +16,21 @@
 
 状態: 対応済み
 
-通常形聴牌の手牌枚数は `standardTenpaiHandSize mentsuCount` が表す `3n + 1` で決まるが、
+面子手聴牌の手牌枚数は `mentsuHandTenpaiSize mentsuCount` が表す `3n + 1` で決まるが、
 `IsTenpaiHandSize` は有効な5個の値を選言で再列挙し、`Hand.lean` の名前付き定数の一部は
 大きい手牌サイズから3を引く別の計算経路を持っていた。
 
-`IsTenpaiHandSize` は、面子数が `0` 以上 `standardHandMentsuCount` 以下であり、手牌枚数が
-`standardTenpaiHandSize` から得られるという有限存在条件へ変更した。`Hand.lean` の各サイズ定数も、
+`IsTenpaiHandSize` は、面子数が `0` 以上 `mentsuHandMaxMentsuCount` 以下であり、手牌枚数が
+`mentsuHandTenpaiSize` から得られるという有限存在条件へ変更した。`Hand.lean` の各サイズ定数も、
 対応する面子数を同じ関数へ渡して定義する。これにより、対象範囲と枚数計算をそれぞれ
-`standardHandMentsuCount` と `standardTenpaiHandSize` だけが決める。
+`mentsuHandMaxMentsuCount` と `mentsuHandTenpaiSize` だけが決める。
 
 また、`DirectWaitGeneration.lean` に局所定義されていた面子列の牌数補題は、
 同じ内容の補題があったため削除し、現在はCoreの `MentsuCandidateList.flatMap_orderedTiles_length` を直接使う。
 
 `Hand` も、1枚、4枚、7枚、10枚、13枚ごとに同じ物理牌埋め込みを持つ5コンストラクタから、
-`mentsuCount : Fin (standardHandMentsuCount + 1)` と
-`Fin (standardTenpaiHandSize mentsuCount)` の牌を持つ1つの構造体へ変更した。これにより、合法な5サイズを
+`mentsuCount : Fin (mentsuHandMaxMentsuCount + 1)` と
+`Fin (mentsuHandTenpaiSize mentsuCount)` の牌を持つ1つの構造体へ変更した。これにより、合法な5サイズを
 型で制限する性質を保ったまま、サイズ名、コンストラクタ、`toFinset` の分岐による同じ規則の再列挙を除いた。
 
 ### 分解の操作履歴と外延的な正しさを分離する
@@ -207,7 +207,7 @@ Tanki関係の実装変更後に `fourTileReport` を再生成したところ、
 移行用の対応表だけ [obsolete-vocabulary.md](obsolete-vocabulary.md) に分離した。
 
 採用名の判断としては、`CompletedComponent` は待ち牌除去後の観測成分との「完成・不完全」の対比を強くしすぎ、
-`StandardComponent` は標準形以外との比較を想定させ、`MeldOrPair` は実装表現を列挙するだけで
+`MentsuHandComponent` は他の完成形との比較を想定させ、`MeldOrPair` は実装表現を列挙するだけで
 和了分割との関係を示さないため採用しなかった。
 
 ### 和了構成部品列の標準順が型で保証されていない

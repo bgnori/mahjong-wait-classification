@@ -18,7 +18,7 @@ Tenhou IDは入力境界の形式であり、分類の内部表現には持ち�
 ## Canonical shared-domain terms / 共通ドメイン用語の正本
 
 対子・順子・刻子と雀頭1つ＋指定数の面子による通常形完成は、共通核の
-`Pair`、`Shuntsu`、`MentsuCandidate`、`StandardDecomposition`、`StandardCompletion`を
+`Pair`、`Shuntsu`、`MentsuCandidate`、`MentsuHandDecomposition`、`MentsuHandCompletion`を
 正本とする。分類側は共有`Pair`、`Shuntsu`、`MentsuCandidate`を直接利用する。
 順序付き展開はCoreの`Pair.orderedTiles`、`Shuntsu.orderedTiles`、
 `MentsuCandidate.orderedTiles`を正本とし、順子はランク昇順とする。分類固有の
