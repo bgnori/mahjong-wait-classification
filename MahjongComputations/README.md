@@ -27,8 +27,17 @@ The report is written to `reports/seven-tile-report.json`.
 
 Current modules:
 
-- `Common.lean`: provides legal tile-multiset generation and counting, groups
-  direct derivations and report statistics, and formats shared report values.
+- `Common.lean`: re-exports the shared computation modules for existing clients.
+- `TileMultisets.lean`: generates and counts legal tile multisets and provides
+  their canonical key.
+- `WaitCompletionGrouping.lean`: groups completions by hand and streams
+  canonical direct derivations into those groups.
+- `WaitCoreReduction.lean`: performs cached wait-core lookups and
+  mentsu-preserving reducibility checks.
+- `WaitPathology.lean`: caches pathology witnesses and groups pathology reports.
+- `WaitDecompositionReporting.lean`: groups decomposition codes and component
+  relation reports.
+- `WaitReportFormatting.lean`: formats shared report values and distributions.
 - `FourTile.lean`: enumerates all legal four-tile multisets and computes tenpai
   waits, reducibility, and wait decomposition codes.
 - `FourTileReport.lean`: writes the exhaustive four-tile report as JSON.
