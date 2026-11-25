@@ -26,8 +26,10 @@ When the three repositories are siblings under the same directory, open
 uses the local `../mahjong-domain-core` checkout so edits to the shared domain
 are available immediately.
 
-The [Lean CI](.github/workflows/checks.yml) builds `Mahjong` and `MahjongTests`
-on pushes and pull requests against Core's `main`. Core's CI also tests its
+The [Lean CI](.github/workflows/checks.yml) builds `Mahjong` and the fast
+`MahjongTests` suite, then builds the exhaustive wait-decomposition target and
+runs the runtime integration tests on pushes and pull requests against Core's
+`main`. Core's CI also tests its
 changes against this repository's `main`, without waiting for a consumer commit.
 Tested commit SHAs are recorded in each run summary. This rolling policy is
 intentional while Core is evolving; exhaustive report generation is not part
@@ -67,10 +69,19 @@ To check the Mahjong modules explicitly:
 lake build Mahjong
 ```
 
-To run the computational regression tests:
+To run the fast computational regression tests:
 
 ```bash
 lake build MahjongTests
+```
+
+The exhaustive wait-decomposition regression suite is a separate target. CI
+builds it and runs the IO integration tests explicitly:
+
+```bash
+lake build MahjongTests.WaitDecompositionCodeExhaustive
+lake exe external-wait-completion-test
+lake exe parallel-computation-test
 ```
 
 To run expensive/exhaustive Mahjong computations:

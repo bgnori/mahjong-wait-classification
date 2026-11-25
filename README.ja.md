@@ -24,7 +24,8 @@
 共有ドメインの変更を各コンシューマーですぐに利用できます。
 
 [Lean CI](.github/workflows/checks.yml)では、pushとpull requestごとにCoreの`main`を使って
-`Mahjong`と`MahjongTests`をビルドします。Core側のCIでも、変更中のCoreとこのリポジトリの
+`Mahjong`とfast回帰suiteをビルドし、exhaustive suiteとIO統合テストも個別に実行します。
+Core側のCIでも、変更中のCoreとこのリポジトリの
 `main`を組み合わせて検証するため、利用側のcommitを待たずに影響を確認できます。
 検証した各commitのSHAは実行概要に記録します。Coreが活発に変わる間はこの追従方式とし、
 全列挙レポートの生成はCIの対象に含めません。
@@ -65,10 +66,23 @@ lake build
 lake build Mahjong
 ```
 
-計算量の大きい回帰テストと全列挙を明示的に確認する場合:
+通常のfast回帰テストを確認する場合:
 
 ```bash
 lake build MahjongTests
+```
+
+exhaustive回帰テストとIO統合テストを含む完全確認:
+
+```bash
+lake build MahjongTests.WaitDecompositionCodeExhaustive
+lake exe external-wait-completion-test
+lake exe parallel-computation-test
+```
+
+全列挙レポートを生成する場合:
+
+```bash
 lake build MahjongComputations
 ```
 

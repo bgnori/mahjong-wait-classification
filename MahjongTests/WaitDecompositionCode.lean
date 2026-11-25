@@ -78,14 +78,6 @@ theorem fourTileTenpai_relationClassification_determines_pathologyDegree :
     tenpaiRelationClassificationHasUniformPathologyDegree 1 = true := by
   native_decide
 
-/--
-Among generated irreducible seven-tile standard-form tenpai hands, equal
-decomposition codes and component relations imply equal pathology degree.
--/
-theorem sevenTileIrreducibleTenpai_relationClassification_determines_pathologyDegree :
-    tenpaiRelationClassificationHasUniformPathologyDegree 2 true = true := by
-  native_decide
-
 def Internal.healthySevenTileCounterexample : List Tile :=
   manzu [2, 3, 4, 4, 4, 4] ++ Tile.suitedTiles .pin [5]
 
