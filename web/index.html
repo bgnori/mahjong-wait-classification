@@ -22,7 +22,7 @@
 <body>
   <p class="hint"><a href="../">← 全列挙レポート</a></p>
   <h1>待ち形分類器</h1>
-  <p class="hint">4 / 7 / 10 / 13 枚の牌姿を入力すると、ブラウザ内だけで分類を計算します(サーバには何も送信しません)。</p>
+  <p class="hint">4 / 7 / 10 / 13 枚の牌姿を入力すると、ブラウザ内だけで分類を計算します(牌姿データはサーバに送信しません)。</p>
   <label for="hand">牌姿 (例: <code>1223m</code>, <code>1112345678999m</code>。0 は赤5)</label>
   <input id="hand" autocomplete="off" spellcheck="false" autofocus>
   <div id="examples"></div>
@@ -31,5 +31,7 @@
   <script src="classification-table.js"></script>
   <script src="classifier.js"></script>
   <script src="app.js"></script>
+  <script data-goatcounter="https://bgnori.goatcounter.com/count"
+          async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
